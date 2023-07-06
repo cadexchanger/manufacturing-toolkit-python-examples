@@ -38,6 +38,9 @@ import manufacturingtoolkit.CadExMTK  as mtk
 sys.path.append(os.path.abspath(os.path.dirname(Path(__file__).resolve()) + "/../../"))
 sys.path.append(os.path.abspath(os.path.dirname(Path(__file__).resolve()) + "/../../helpers/"))
 
+import cadex_license as license
+import mtk_license
+
 import featuregroup
 import shapeprocessor
 
@@ -77,6 +80,10 @@ def PrintFeatureParameters(theIssue: mtk.MTKBase_Feature):
             "actual distance",       aSDBFIssue.ActualDistanceBetweenFeatures(),      "mm")
     elif mtk.DFMSheetMetal_FlatPatternInterferenceIssue.CompareType(theIssue):
         pass #no parameters
+    elif mtk.DFMSheetMetal_IrregularCornerFilletRadiusNotchIssue.CompareType(theIssue):
+        aICFRNIssue = mtk.DFMSheetMetal_IrregularCornerFilletRadiusNotchIssue.Cast(theIssue)
+        featuregroup.FeatureGroupManager.PrintFeatureParameter("expected corner fillet radius", aICFRNIssue.ExpectedCornerFilletRadius(), "mm")
+        featuregroup.FeatureGroupManager.PrintFeatureParameter("actual corner fillet radius",   aICFRNIssue.ActualCornerFilletRadius(),   "mm")
     elif mtk.DFMSheetMetal_IrregularSizeBendReliefIssue.CompareType(theIssue):
         aISBRIssue = mtk.DFMSheetMetal_IrregularSizeBendReliefIssue.Cast(theIssue)
         anExpectedRelief = aISBRIssue.ExpectedMinBendRelief()
@@ -168,6 +175,8 @@ def PrintIssues(theIssueList: mtk.MTKBase_FeatureList):
             aManager.AddFeature("Small Diameter Hole Issue(s)", "Hole(s)", True, anIssue)
         elif mtk.DFMSheetMetal_FlatPatternInterferenceIssue.CompareType(anIssue):
             aManager.AddFeature("Flat Pattern Interference Issue(s)", "", False, anIssue)
+        elif mtk.DFMSheetMetal_IrregularCornerFilletRadiusNotchIssue.CompareType(anIssue):
+            aManager.AddFeature("Irregular Corner Fillet Radius Notch Issue(s)", "Notch(es)", True, anIssue)
         elif mtk.DFMSheetMetal_IrregularSizeBendReliefIssue.CompareType(anIssue):
             aManager.AddFeature("Irregular Size Bend Relief Issue(s)", "Bend(s)", True, anIssue)
         elif mtk.DFMSheetMetal_LargeDepthBeadIssue.CompareType(anIssue):
@@ -212,10 +221,14 @@ class PartProcessor(shapeprocessor.ShapeProcessor):
         PrintIssues(anIssueList)
 
 def main(theSource: str):
-    aSDKRuntimeKey = os.path.abspath(os.path.dirname(Path(__file__).resolve()) + r"/sdk_runtime_key.lic")
-    aMTKRuntimeKey = os.path.abspath(os.path.dirname(Path(__file__).resolve()) + r"/mtk_runtime_key.lic")
-    if not cadex.LicenseManager.CADExLicense_ActivateRuntimeKeyFromAbsolutePath(aSDKRuntimeKey) or not cadex.LicenseManager.CADExLicense_ActivateRuntimeKeyFromAbsolutePath(aMTKRuntimeKey):
+    aKey = license.Value()
+    anMTKKey = mtk_license.Value()
+
+    if not cadex.LicenseManager.Activate(aKey):
         print("Failed to activate CAD Exchanger license.")
+        return 1
+    if not cadex.LicenseManager.Activate(anMTKKey):
+        print("Failed to activate Manufacturing Toolkit license.")
         return 1
 
     aModel = cadex.ModelData_Model()
@@ -238,7 +251,7 @@ def main(theSource: str):
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         print( "Usage: <input_file>, where:")
-        print( "    <input_file>  is a name of the file to be read")
+        print( "    <input_file> is a name of the file to be read")
         sys.exit()
 
     aSource = os.path.abspath(sys.argv[1])

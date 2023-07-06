@@ -39,6 +39,9 @@ import manufacturingtoolkit.CadExMTK as mtk
 sys.path.append(os.path.abspath(os.path.dirname(Path(__file__).resolve()) + "/../../"))
 sys.path.append(os.path.abspath(os.path.dirname(Path(__file__).resolve()) + "/../../helpers/"))
 
+import cadex_license as license
+import mtk_license
+
 import featuregroup
 import shapeprocessor
 
@@ -105,6 +108,14 @@ def PrintFeatureParameters(theIssue: mtk.MTKBase_Feature):
         aIRMPFFIssue = mtk.DFMMachining_InconsistentRadiusMilledPartFloorFilletIssue.Cast(theIssue)
         featuregroup.FeatureGroupManager.PrintFeatureParameter("expected radius", aIRMPFFIssue.ExpectedRadius(), "mm")
         featuregroup.FeatureGroupManager.PrintFeatureParameter("actual radius",   aIRMPFFIssue.ActualRadius(),   "mm")
+    elif mtk.DFMMachining_NarrowRegionInPocketIssue.CompareType(theIssue):
+        aSMNRDIssue = mtk.DFMMachining_NarrowRegionInPocketIssue.Cast(theIssue)
+        featuregroup.FeatureGroupManager.PrintFeatureParameter("expected minimum region size", aSMNRDIssue.ExpectedMinRegionSize(), "mm")
+        featuregroup.FeatureGroupManager.PrintFeatureParameter("actual region size",           aSMNRDIssue.ActualRegionSize(),      "mm")
+    elif mtk.DFMMachining_LargeDifferenceRegionsSizeInPocketIssue.CompareType(theIssue):
+        aLMNRRIssue = mtk.DFMMachining_LargeDifferenceRegionsSizeInPocketIssue.Cast(theIssue)
+        featuregroup.FeatureGroupManager.PrintFeatureParameter("expected regions maximum to minimum size ratio", aLMNRRIssue.ExpectedMaxRegionsMaxToMinSizeRatio(), "")
+        featuregroup.FeatureGroupManager.PrintFeatureParameter("actual regions maximum to minimum size ratio",   aLMNRRIssue.ActualMaxRegionsMaxToMinSizeRatio(),   "")
     #turning
     elif mtk.DFMMachining_IrregularTurnedPartOuterDiameterProfileReliefIssue.CompareType(theIssue):
         anITPODPRIssue = mtk.DFMMachining_IrregularTurnedPartOuterDiameterProfileReliefIssue.Cast(theIssue)
@@ -184,6 +195,10 @@ def PrintIssues(theIssueList: mtk.MTKBase_FeatureList):
             aManager.AddFeature("Milled Part External Edge Fillet Issue(s)", "", False, anIssue)
         elif mtk.DFMMachining_InconsistentRadiusMilledPartFloorFilletIssue.CompareType(anIssue):
             aManager.AddFeature("Inconsistent Radius Milled Part Floor Fillet Issue(s)", "Floor Fillet(s)", True, anIssue)
+        elif mtk.DFMMachining_NarrowRegionInPocketIssue.CompareType(anIssue):
+            aManager.AddFeature("Narrow Region In Pocket Issue(s)", "Region(s)", True, anIssue)
+        elif mtk.DFMMachining_LargeDifferenceRegionsSizeInPocketIssue.CompareType(anIssue):
+            aManager.AddFeature("Large Difference Regions Size In Pocket Issue(s)", "Region Size(s)", True, anIssue)
         #turning
         elif mtk.DFMMachining_IrregularTurnedPartOuterDiameterProfileReliefIssue.CompareType(anIssue):
             aManager.AddFeature("Irregular Turned Part Outer Diameter Profile Relief Issue(s)", "Outer Diameter Profile Relief(s)", True, anIssue)
@@ -263,12 +278,15 @@ def OperationType(theOperationStr: str):
         return mtk.Machining_OT_Undefined
 
 def main(theSource: str, theOperationStr: str):
-    aSDKRuntimeKey = os.path.abspath(os.path.dirname(Path(__file__).resolve()) + r"/sdk_runtime_key.lic")
-    aMTKRuntimeKey = os.path.abspath(os.path.dirname(Path(__file__).resolve()) + r"/mtk_runtime_key.lic")
-    if not cadex.LicenseManager.CADExLicense_ActivateRuntimeKeyFromAbsolutePath(aSDKRuntimeKey) or not cadex.LicenseManager.CADExLicense_ActivateRuntimeKeyFromAbsolutePath(aMTKRuntimeKey):
+    aKey = license.Value()
+    anMTKKey = mtk_license.Value()
+
+    if not cadex.LicenseManager.Activate(aKey):
         print("Failed to activate CAD Exchanger license.")
         return 1
-
+    if not cadex.LicenseManager.Activate(anMTKKey):
+        print("Failed to activate Manufacturing Toolkit license.")
+        return 1
     aModel = cadex.ModelData_Model()
     aReader = cadex.ModelData_ModelReader()
 
@@ -296,8 +314,8 @@ def main(theSource: str, theOperationStr: str):
 if __name__ == "__main__":
     if len(sys.argv) != 3:
         print("Usage: <input_file> <operation>, where:")
-        print("    <input_file>  is a name of the file to be read")
-        print("    <operation>   is a name of desired machining operation")
+        print("    <input_file> is a name of the file to be read")
+        print("    <operation> is a name of desired machining operation")
         PrintSupportedOperations()
         sys.exit()
 

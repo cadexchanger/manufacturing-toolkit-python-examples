@@ -37,6 +37,9 @@ import manufacturingtoolkit.CadExMTK as mtk
 
 sys.path.append(os.path.abspath(os.path.dirname(Path(__file__).resolve()) + "/../../"))
 
+import cadex_license as license
+import mtk_license
+
 class PartProcessor(cadex.ModelData_Model_VoidElementVisitor):
     def __init__(self):
         super().__init__()
@@ -89,10 +92,14 @@ class PartProcessor(cadex.ModelData_Model_VoidElementVisitor):
                         i+=1
 
 def main(theSource: str, theRes: int):
-    aSDKRuntimeKey = os.path.abspath(os.path.dirname(Path(__file__).resolve()) + r"/sdk_runtime_key.lic")
-    aMTKRuntimeKey = os.path.abspath(os.path.dirname(Path(__file__).resolve()) + r"/mtk_runtime_key.lic")
-    if not cadex.LicenseManager.CADExLicense_ActivateRuntimeKeyFromAbsolutePath(aSDKRuntimeKey) or not cadex.LicenseManager.CADExLicense_ActivateRuntimeKeyFromAbsolutePath(aMTKRuntimeKey):
+    aKey = license.Value()
+    anMTKKey = mtk_license.Value()
+
+    if not cadex.LicenseManager.Activate(aKey):
         print("Failed to activate CAD Exchanger license.")
+        return 1
+    if not cadex.LicenseManager.Activate(anMTKKey):
+        print("Failed to activate Manufacturing Toolkit license.")
         return 1
 
     if theRes < 100:
@@ -119,8 +126,8 @@ def main(theSource: str, theRes: int):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2 or len(sys.argv) > 3:
-        print("Usage: <input_file> <input_resolution> where:")
-        print("    <input_file>  is a name of the file to be read")
+        print("Usage: <input_file> <input_resolution>, where:")
+        print("    <input_file> is a name of the file to be read")
         print("    <input_resolution> is an optional argument that determine accuracy")
         print("    of wall thickness calculation.")
         print("    The larger the value, the higher the accuracy of the calculations,")

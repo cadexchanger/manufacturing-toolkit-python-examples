@@ -38,6 +38,9 @@ import manufacturingtoolkit.CadExMTK  as mtk
 sys.path.append(os.path.abspath(os.path.dirname(Path(__file__).resolve()) + "/../../"))
 sys.path.append(os.path.abspath(os.path.dirname(Path(__file__).resolve()) + "/../../helpers/"))
 
+import cadex_license as license
+import mtk_license
+
 import shapeprocessor
 import featuregroup
 
@@ -153,10 +156,14 @@ def OperationType(theOperationStr: str):
         return mtk.Machining_OT_Undefined
 
 def main(theSource: str, theOperationStr: str):
-    aSDKRuntimeKey = os.path.abspath(os.path.dirname(Path(__file__).resolve()) + r"/sdk_runtime_key.lic")
-    aMTKRuntimeKey = os.path.abspath(os.path.dirname(Path(__file__).resolve()) + r"/mtk_runtime_key.lic")
-    if not cadex.LicenseManager.CADExLicense_ActivateRuntimeKeyFromAbsolutePath(aSDKRuntimeKey) or not cadex.LicenseManager.CADExLicense_ActivateRuntimeKeyFromAbsolutePath(aMTKRuntimeKey):
+    aKey = license.Value()
+    anMTKKey = mtk_license.Value()
+
+    if not cadex.LicenseManager.Activate(aKey):
         print("Failed to activate CAD Exchanger license.")
+        return 1
+    if not cadex.LicenseManager.Activate(anMTKKey):
+        print("Failed to activate Manufacturing Toolkit license.")
         return 1
 
     aModel = cadex.ModelData_Model()
@@ -186,8 +193,8 @@ def main(theSource: str, theOperationStr: str):
 if __name__ == "__main__":
     if len(sys.argv) != 3:
         print("Usage:")
-        print("    <input_file>  is a name of the file to be read")
-        print("    <operation>   is a name of desired machining operation")
+        print("    <input_file> is a name of the file to be read")
+        print("    <operation> is a name of desired machining operation")
         PrintSupportedOperations()
         sys.exit()
 

@@ -37,6 +37,9 @@ import manufacturingtoolkit.CadExMTK as mtk
 
 sys.path.append(os.path.abspath(os.path.dirname(Path(__file__).resolve()) + "/../../"))
 
+import cadex_license as license
+import mtk_license
+
 class PartCollector(cadex.ModelData_Model_VoidElementVisitor):
     def __init__(self, thePartVec: list):
         super().__init__()
@@ -52,7 +55,13 @@ def CalculateInitialThicknessValue(theShape: cadex.ModelData_Shape):
     aThickness = aVolume / (aSurfaceArea / 2.0)
     return aThickness
 
-def Unfold(thePart: cadex.ModelData_Part):
+def Unfold(thePart: cadex.ModelData_Part, thePartIndex: int):
+    aPartName = ""
+    if thePart.Name().IsEmpty():
+        aPartName = "noname"
+    else:
+        aPartName = thePart.Name()
+
     aBRep = thePart.BRepRepresentation()
     if aBRep:
         anUnfolder = mtk.SheetMetal_Unfolder()
@@ -60,19 +69,24 @@ def Unfold(thePart: cadex.ModelData_Part):
         aBodyList = aBRep.Get()
         for aBody in aBodyList:
             aShapeIt = cadex.ModelData_Shape_Iterator(aBody)
+            i = 0
             while aShapeIt.HasNext():
                 aShape = aShapeIt.Next()
                 if aShape.Type() == cadex.ModelData_ST_Solid:
+                    print("Part #", thePartIndex, " [\"", aPartName, "\"] - solid #", i, " has:", sep="")
+                    i += 1
                     aSolid = cadex.ModelData_Solid_Cast(aShape)
                     aThickness = CalculateInitialThicknessValue(aSolid)
                     return anUnfolder.Perform(aSolid, aThickness)
                 elif aShape.Type() == cadex.ModelData_ST_Shell:
+                    print("Part #", thePartIndex, " [\"", aPartName, "\"] - shell #", i, " has:", sep="")
+                    i += 1
                     aShell = cadex.ModelData_Shell_Cast(aShape)
                     return anUnfolder.Perform(aShell)
-    return cadex.ModelData_Shell()
+    return mtk.SheetMetal_FlatPattern()
 
-def WriteToDrawing(theUnfoldedShell: cadex.ModelData_Shell, theFilePath: str):
-    aDrawing = mtk.SheetMetal_Unfolder().CreateDrawing(theUnfoldedShell)
+def WriteToDrawing(theFlatPattern: mtk.SheetMetal_FlatPattern, theFilePath: str):
+    aDrawing = theFlatPattern.ToDrawing();
     if aDrawing.IsNull():
         return False
     aDrawingModel = cadex.ModelData_Model()
@@ -82,10 +96,14 @@ def WriteToDrawing(theUnfoldedShell: cadex.ModelData_Shell, theFilePath: str):
     return aRes
 
 def main(theSource: str, theDrawingPath: str):
-    aSDKRuntimeKey = os.path.abspath(os.path.dirname(Path(__file__).resolve()) + r"/sdk_runtime_key.lic")
-    aMTKRuntimeKey = os.path.abspath(os.path.dirname(Path(__file__).resolve()) + r"/mtk_runtime_key.lic")
-    if not cadex.LicenseManager.CADExLicense_ActivateRuntimeKeyFromAbsolutePath(aSDKRuntimeKey) or not cadex.LicenseManager.CADExLicense_ActivateRuntimeKeyFromAbsolutePath(aMTKRuntimeKey):
+    aKey = license.Value()
+    anMTKKey = mtk_license.Value()
+
+    if not cadex.LicenseManager.Activate(aKey):
         print("Failed to activate CAD Exchanger license.")
+        return 1
+    if not cadex.LicenseManager.Activate(anMTKKey):
+        print("Failed to activate Manufacturing Toolkit license.")
         return 1
 
     aModel = cadex.ModelData_Model()
@@ -95,6 +113,8 @@ def main(theSource: str, theDrawingPath: str):
     if not aReader.Read(cadex.Base_UTF16String(theSource), aModel):
         print("Failed to open and convert the file " + theSource)
         return 1
+
+    print("Model: ", aModel.Name(), "\n", sep="")
 
     aPartVec = list()
     aPartCollector = PartCollector(aPartVec)
@@ -107,10 +127,18 @@ def main(theSource: str, theDrawingPath: str):
         return 1
 
     aPart = aPartVec[aPartIndex]
-    anUnfoldedShell = Unfold(aPart)
+    aFlatPattern = Unfold(aPart, aPartIndex)
+
+    print("    Flat Pattern with:")
+
+    if not aFlatPattern.IsNull():
+        print("          length: ",    aFlatPattern.Length(),    " mm")
+        print("          width: ",     aFlatPattern.Width(),     " mm")
+        print("          thickness: ", aFlatPattern.Thickness(), " mm")
+        print("          perimeter: ", aFlatPattern.Perimeter(), " mm")
 
     # Save unfolded shape as 2D DXF drawing
-    if WriteToDrawing(anUnfoldedShell, theDrawingPath):
+    if WriteToDrawing(aFlatPattern, theDrawingPath):
         aPartName = ""
         if aPart.Name().IsEmpty():
             aPartName = "noname"
@@ -125,7 +153,7 @@ def main(theSource: str, theDrawingPath: str):
 if __name__ == "__main__":
     if len(sys.argv) != 3:
         print("Usage: <input_file> <output_file>, where:")
-        print("    <input_file>  is a name of the file to be read")
+        print("    <input_file> is a name of the file to be read")
         print("    <output_file> is a name of the DXF file with drawing to be written")
         sys.exit()
 

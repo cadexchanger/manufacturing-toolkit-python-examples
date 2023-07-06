@@ -10,23 +10,29 @@ The examples are provided under a permissive Modified BSD License. You may inser
 
 * Latest version of CAD Exchanger SDK
 * Latest version of Manufacturing Toolkit
-* CPython 3.8 - 3.10
+* Windows x86-64: CPython 3.7 - 3.11
+* Linux x86-64: CPython 3.7 - 3.11
+* macOS is not supported as of now
 
 ## Running
 
-To use the examples, first obtain the MTK evaluation [here](https://cadexchanger.com/contact-us/licensing-inquiry/). Please describe your use case in detail. Upon filling out the form you'll receive an email with an evaluation license key for SDK (`cadex_license.lic` file) and MTK (`mtk_license.lic` file). There will also be links to the pip repositories containing the CAD Exchanger SDK and MTK packages.
+To use the examples, first obtain the MTK evaluation [here](https://cadexchanger.com/contact-us/licensing-inquiry/). Please describe your use case in detail. Upon filling out the form you'll receive an email with an evaluation license key for SDK (`cadex_license.py` file) and MTK (`mtk_license.py` file). There will also be links to the pip repository containing the CAD Exchanger SDK and MTK packages. You can also register in our [Customer Corner](https://my.cadexchanger.com/) and see both the license key and the repository link there.
 
-1. Install the CAD Exchanger SDK package with the following command, substituting `<repo-sdk-link-from-email>` for the actual link to pip repository:
-
-    ```
-    $ pip install cadexchanger --extra-index-url=<repo-sdk-link-from-email>
-    ```
-
-2. Install the MTK package with the following command, substituting `<repo-mtk-link-from-email>` for the actual link to pip repository:
+1. Install the CAD Exchanger SDK package with the following command, substituting `<repo-link-from-email>` for the actual link to pip repository:
 
     ```
-    $ pip install manufacturingtoolkit --extra-index-url=<repo-mtk-link-from-email>
+    $ pip install cadexchanger --extra-index-url=<repo-link-from-email>
     ```
+
+    If you get an error message that `pip` was not able to find the package, please check the requirements above and make sure that your configuration is supported.
+
+2. Install the MTK package with the following command, substituting `<repo-link-from-email>` for the actual link to pip repository:
+
+    ```
+    $ pip install manufacturingtoolkit --extra-index-url=<repo-link-from-email>
+    ```
+
+    If you get an error message that `pip` was not able to find the package, please check the requirements above and make sure that your configuration is supported.
 
 3. Place the license keys into the repository root.
 
@@ -36,17 +42,13 @@ To use the examples, first obtain the MTK evaluation [here](https://cadexchanger
     $ python dfm/sheet_metal_analyzer/run.py
     ```
 
-    Every `run.py` script first generates a runtime key specific to the sample being launched and then runs the sample with pre-packaged models.
-
-    Learn more about runtime keys and SDK licensing starting from CAD Exchanger 3.18 [here](https://docs.cadexchanger.com/sdk/sdk_licensing.html).
-
-5. Once the `run.py` script has been used at least once and runtime license key is available, you can try out the sample with custom parameters. For example, for `sheet_metal_analyzer` sample, substitute `<input-model>` for your CAD model that you want to convert:
+5. You can also launch each sample with custom parameters. For example, for `sheet_metal_analyzer` sample, substitute `<input-model>` for your CAD model that you want to convert:
 
     ```
     $ python dfm/sheet_metal_analyzer/sheet_metal_analyzer.py <input-model>
     ```
 
-    It's also possible to copy the runtime key creation code from `run.py` to the sample's main source file and use the sample directly right away.
+    To find out which parameters each sample requires, either launch it without parameters, or view the source code.
 
 ## Learn more
 

@@ -38,6 +38,7 @@ class MTKConverter_UnfoldedPartData:
         self.myLength = 0.0
         self.myWidth = 0.0
         self.myThickness = 0.0
+        self.myPerimeter = 0.0
         self.myBRep = cadex.ModelData_BRepRepresentation()
         self.myIssueList = mtk.MTKBase_FeatureList()
 
@@ -78,24 +79,19 @@ class MTKConverter_SheetMetalProcessor(pp.MTKConverter_VoidPartProcessor):
         for i in theData.FeatureList():
             anSMData.myFeatureList.Append(i)
 
-        anUnfoldedShell = theData.UnfoldedShell()
         anUnfoldedData = anSMData.myUnfoldedPartData
-        if anUnfoldedShell:
-            self.myCurrentUnfoldedBRep.Add(anUnfoldedShell)
-            anUnfoldedData.myBRep = self.myCurrentUnfoldedBRep
+        aFlatPattern = theData.FlatPattern()
+        if not aFlatPattern.IsNull():
+            anUnfoldedShell = aFlatPattern.UnfoldedShell()
+            if anUnfoldedShell:
+                self.myCurrentUnfoldedBRep.Add(anUnfoldedShell)
+                anUnfoldedData.myBRep = self.myCurrentUnfoldedBRep
 
-            anUnfoldedData.myIsInit = True
-            anUnfoldedData.myThickness = max(0., theData.Thickness())
-
-            aTrsf = cadex.ModelData_Transformation()
-            aBox = cadex.ModelData_Box()
-            cadex.ModelAlgo_BoundingBox.ComputeMin(anUnfoldedShell, aBox, aTrsf)
-
-            aSizes = [aBox.XRange(), aBox.YRange(), aBox.ZRange()]
-            aSizes.sort()
-
-            anUnfoldedData.myWidth = aSizes[1]
-            anUnfoldedData.myLength = aSizes[2]
+                anUnfoldedData.myIsInit = True
+                anUnfoldedData.myLength = aFlatPattern.Length()
+                anUnfoldedData.myWidth = aFlatPattern.Width()
+                anUnfoldedData.myThickness = aFlatPattern.Thickness()
+                anUnfoldedData.myPerimeter = aFlatPattern.Perimeter()
 
         aDFMAnalyzer = mtk.DFMSheetMetal_Analyzer()
         anIssueList = aDFMAnalyzer.Perform(theData)

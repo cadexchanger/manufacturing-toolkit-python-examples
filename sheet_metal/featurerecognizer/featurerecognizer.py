@@ -39,6 +39,9 @@ import manufacturingtoolkit.CadExMTK as mtk
 sys.path.append(os.path.abspath(os.path.dirname(Path(__file__).resolve()) + "/../../"))
 sys.path.append(os.path.abspath(os.path.dirname(Path(__file__).resolve()) + "/../../helpers/"))
 
+import cadex_license as license
+import mtk_license
+
 import featuregroup
 import shapeprocessor
 
@@ -72,6 +75,13 @@ def HoleName(theHole: mtk.SheetMetal_Hole):
         return "Complex Hole(s)"
     return "Hole(s)"
 
+def NotchName(theNotch: mtk.SheetMetal_Notch):
+    if mtk.SheetMetal_StraightNotch.CompareType(theNotch):
+        return "Straight Notch(es)"
+    elif mtk.SheetMetal_VNotch.CompareType(theNotch):
+        return "V Notch(es)"
+    return "Notch(es)"
+
 #group by parameters to provide more compact information about features
 def GroupByParameters(theFeatureList: mtk.MTKBase_FeatureList, theManager: featuregroup.FeatureGroupManager):
     for aFeature in theFeatureList:
@@ -90,7 +100,8 @@ def GroupByParameters(theFeatureList: mtk.MTKBase_FeatureList, theManager: featu
             aBend = mtk.SheetMetal_Bend.Cast(aFeature)
             theManager.AddFeature(BendName(aBend), "Bend(s)", True, aFeature)
         elif mtk.SheetMetal_Notch.CompareType(aFeature):
-            theManager.AddFeature("Notch(s)", "Notch(s)", True, aFeature)
+            aNotch = mtk.SheetMetal_Notch.Cast(aFeature)
+            theManager.AddFeature(NotchName(aNotch), "Notch(es)", True, aFeature)
         elif mtk.SheetMetal_Tab.CompareType(aFeature):
             theManager.AddFeature("Tab(s)", "Tab(s)", True, aFeature)
         elif mtk.SheetMetal_CompoundBend.CompareType(aFeature):
@@ -126,6 +137,12 @@ def PrintFeatureParameters(theFeature: mtk.MTKBase_Feature):
         aNotch = mtk.SheetMetal_Notch.Cast(theFeature)
         featuregroup.FeatureGroupManager.PrintFeatureParameter("length", aNotch.Length(), "mm")
         featuregroup.FeatureGroupManager.PrintFeatureParameter("width",  aNotch.Width(),  "mm")
+        if mtk.SheetMetal_StraightNotch.CompareType(aNotch):
+            aStraightNotch = mtk.SheetMetal_StraightNotch.Cast(aNotch)
+            featuregroup.FeatureGroupManager.PrintFeatureParameter ("corner fillet radius", aStraightNotch.CornerFilletRadius(), "mm")
+        elif mtk.SheetMetal_VNotch.CompareType(aNotch):
+            aVNotch = mtk.SheetMetal_VNotch.Cast(aNotch)
+            featuregroup.FeatureGroupManager.PrintFeatureParameter ("angle", ToDegrees (aVNotch.Angle()), "deg")
     elif mtk.SheetMetal_Tab.CompareType(theFeature):
         aTab = mtk.SheetMetal_Tab.Cast(theFeature)
         featuregroup.FeatureGroupManager.PrintFeatureParameter("length", aTab.Length(), "mm")
@@ -158,10 +175,14 @@ class PartProcessor(shapeprocessor.ShapeProcessor):
         PrintFeatures(aFeatureList)
 
 def main(theSource: str):
-    aSDKRuntimeKey = os.path.abspath(os.path.dirname(Path(__file__).resolve()) + r"/sdk_runtime_key.lic")
-    aMTKRuntimeKey = os.path.abspath(os.path.dirname(Path(__file__).resolve()) + r"/mtk_runtime_key.lic")
-    if not cadex.LicenseManager.CADExLicense_ActivateRuntimeKeyFromAbsolutePath(aSDKRuntimeKey) or not cadex.LicenseManager.CADExLicense_ActivateRuntimeKeyFromAbsolutePath(aMTKRuntimeKey):
+    aKey = license.Value()
+    anMTKKey = mtk_license.Value()
+
+    if not cadex.LicenseManager.Activate(aKey):
         print("Failed to activate CAD Exchanger license.")
+        return 1
+    if not cadex.LicenseManager.Activate(anMTKKey):
+        print("Failed to activate Manufacturing Toolkit license.")
         return 1
 
     aModel = cadex.ModelData_Model()
@@ -184,7 +205,7 @@ def main(theSource: str):
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         print("Usage: <input_file>, where:")
-        print("    <input_file>  is a name of the file to be read")
+        print("    <input_file> is a name of the file to be read")
         sys.exit()
 
     aSource = os.path.abspath(sys.argv[1])

@@ -656,11 +656,28 @@ class MTKConverter_Report:
             theManager.AddGroupData("Louver(s)", "(161, 251, 142)", aFeatureData, theCount)
         elif mtk.SheetMetal_Notch.CompareType(aFeature):
             aNotch = mtk.SheetMetal_Notch.Cast(aFeature)
-            aFeatureData = MTKConverter_Report.__WriteFeatureDataToString2(
-                "Length", "mm", aNotch.Length(),
-                "Width",  "mm", aNotch.Width(),
-                theShapeIdVector)
-            theManager.AddGroupData("Notch(s)", "(239, 136, 190)", aFeatureData, theCount)
+            if mtk.SheetMetal_StraightNotch.CompareType(aNotch):
+                aStraightNotch = mtk.SheetMetal_StraightNotch.Cast(aNotch)
+                aFeatureData = MTKConverter_Report.__WriteFeatureDataToString2(
+                    "Length", "mm", aNotch.Length(),
+                    "Width",  "mm", aNotch.Width(),
+                    "Corner Fillet Radius", "mm", aStraightNotch.CornerFilletRadius(),
+                    theShapeIdVector)
+                theManager.AddGroupData ("Straight Notch(es)", "(240, 135, 132)", aFeatureData, theCount)
+            elif mtk.SheetMetal_VNotch.CompareType(aNotch):
+                aVNotch = mtk.SheetMetal_VNotch.Cast(aNotch)
+                aFeatureData = MTKConverter_Report.__WriteFeatureDataToString3(
+                    "Length", "mm", aNotch.Length(),
+                    "Width",  "mm", aNotch.Width(),
+                    "Angle", "deg", aVNotch.Angle() * 180 / math.pi,
+                    theShapeIdVector)
+                theManager.AddGroupData ("V Notch(es)", "(235, 51, 36)", aFeatureData, theCount)
+            else:
+                aFeatureData = MTKConverter_Report.__WriteFeatureDataToString2(
+                    "Length", "mm", aNotch.Length(),
+                    "Width",  "mm", aNotch.Width(),
+                    theShapeIdVector)
+                theManager.AddGroupData("Notch(es)", "(239, 136, 190)", aFeatureData, theCount)
         elif mtk.SheetMetal_Tab.CompareType(aFeature):
             aTab = mtk.SheetMetal_Tab.Cast(aFeature)
             aFeatureData = MTKConverter_Report.__WriteFeatureDataToString2(
@@ -758,6 +775,20 @@ class MTKConverter_Report:
                 "Actual Radius", "mm", anInconsistentRadiusIssue.ActualRadius(),
                 theShapeIdVector)
             theManager.AddGroupData("Inconsistent Radius Milled Part Floor Fillet Issue(s)", "(180, 15, 190)", aFeatureData, theCount)
+        elif mtk.DFMMachining_NarrowRegionInPocketIssue.CompareType(theIssue):
+            aNarrowRegionIssue = mtk.DFMMachining_NarrowRegionInPocketIssue.Cast(theIssue)
+            aFeatureData = MTKConverter_Report.__WriteFeatureDataToString2(
+                "Expected Minimum Region Size", "mm", aNarrowRegionIssue.ExpectedMinRegionSize(),
+                "Actual Region Size", "mm", aNarrowRegionIssue.ActualRegionSize(),
+                theShapeIdVector)
+            theManager.AddGroupData("Narrow Region In Pocket Issue(s)", "(70, 150, 150)", aFeatureData, theCount)
+        elif mtk.DFMMachining_LargeDifferenceRegionsSizeInPocketIssue.CompareType(theIssue):
+            aLargeRatioIssue = mtk.DFMMachining_LargeDifferenceRegionsSizeInPocketIssue.Cast(theIssue)
+            aFeatureData = MTKConverter_Report.__WriteFeatureDataToString2(
+                "Expected Regions Maximum To Minimum Size Ratio", "", aLargeRatioIssue.ExpectedMaxRegionsMaxToMinSizeRatio(),
+                "Actual Regions Maximum To Minimum Size Ratio", "", aLargeRatioIssue.ActualMaxRegionsMaxToMinSizeRatio(),
+                theShapeIdVector)
+            theManager.AddGroupData("Large Difference Regions Size In Pocket Issue(s)", "(100, 150, 150)", aFeatureData, theCount)
 
     @staticmethod
     def __AddTurningIssue(theManager: FeatureGroupManager, theIssue: mtk.DFMBase_Issue, theCount: int, theShapeIdVector):
@@ -817,6 +848,13 @@ class MTKConverter_Report:
         if mtk.DFMSheetMetal_FlatPatternInterferenceIssue.CompareType(theIssue):
             aFeatureData = MTKConverter_Report.__WriteFeatureDataToString0(theShapeIdVector)
             theManager.AddGroupData("Flat Pattern Interference(s)", "(115, 251, 253)", aFeatureData, theCount)
+        elif mtk.DFMSheetMetal_IrregularCornerFilletRadiusNotchIssue.CompareType(theIssue):
+            aICFRNIssue = mtk.DFMSheetMetal_IrregularCornerFilletRadiusNotchIssue.Cast(theIssue)
+            aFeatureData = MTKConverter_Report.__WriteFeatureDataToString2(
+                "Expected Corner Fillet Radius", "mm", aICFRNIssue.ExpectedCornerFilletRadius(),
+                "Actual Corner Fillet Radius", "mm", aICFRNIssue.ActualCornerFilletRadius(),
+                theShapeIdVector)
+            theManager.AddGroupData("Irregular Corner Fillet Radius Notch(es)", "(239, 136, 190)", aFeatureData, theCount)
         elif mtk.DFMSheetMetal_InconsistentRadiusBendIssue.CompareType(theIssue):
             aIRBIssue = mtk.DFMSheetMetal_InconsistentRadiusBendIssue.Cast(theIssue)
             aFeatureData = MTKConverter_Report.__WriteFeatureDataToString2(
@@ -983,6 +1021,19 @@ class MTKConverter_Report:
                 aIRMPFFIssue = mtk.DFMMachining_InconsistentRadiusMilledPartFloorFilletIssue.Cast(aFeature)
                 aShapeIdVector = MTKConverter_Report.__GetShapesId(aIRMPFFIssue.FloorFillet(), theBRep, cadex.ModelData_ST_Face)
                 theOrderedFeatureList.Append(aFeature, aShapeIdVector)
+            elif mtk.DFMMachining_NarrowRegionInPocketIssue.CompareType(aFeature):
+                aNRIPIssue = mtk.DFMMachining_NarrowRegionInPocketIssue.Cast(aFeature)
+                aShapeIdVector = []
+                MTKConverter_Report.__AddShapesId(aNRIPIssue.InnerFeature(), theBRep, cadex.ModelData_ST_Face, aShapeIdVector)
+                MTKConverter_Report.__AddShapesId(aNRIPIssue.NarrowRegionSidewall(), theBRep, cadex.ModelData_ST_Face, aShapeIdVector)
+                theOrderedFeatureList.Append(aFeature, aShapeIdVector)
+            elif mtk.DFMMachining_LargeDifferenceRegionsSizeInPocketIssue.CompareType(aFeature):
+                aLDRSIPIssue = mtk.DFMMachining_LargeDifferenceRegionsSizeInPocketIssue.Cast(aFeature)
+                aShapeIdVector = []
+                MTKConverter_Report.__AddShapesId(aLDRSIPIssue.InnerFeature(), theBRep, cadex.ModelData_ST_Face, aShapeIdVector);
+                MTKConverter_Report.__AddShapesId(aLDRSIPIssue.MinRegionPocketSidewall(), theBRep, cadex.ModelData_ST_Face, aShapeIdVector)
+                MTKConverter_Report.__AddShapesId(aLDRSIPIssue.MaxRegionPocketSidewall(), theBRep, cadex.ModelData_ST_Face, aShapeIdVector)
+                theOrderedFeatureList.Append(aFeature, aShapeIdVector)
 
             #dfm machining turning
             elif mtk.DFMMachining_SmallDepthBlindBoredHoleReliefIssue.CompareType(aFeature):
@@ -1016,6 +1067,10 @@ class MTKConverter_Report:
             elif mtk.DFMSheetMetal_FlatPatternInterferenceIssue.CompareType(aFeature):
                 aFPIIssue = mtk.DFMSheetMetal_FlatPatternInterferenceIssue.Cast(aFeature)
                 aShapeIdVector = [theBRep.ShapeId(aFPIIssue.FirstFace()), theBRep.ShapeId(aFPIIssue.SecondFace())]
+                theOrderedFeatureList.Append(aFeature, aShapeIdVector)
+            elif mtk.DFMSheetMetal_IrregularCornerFilletRadiusNotchIssue.CompareType(aFeature):
+                aICFRNIssue = mtk.DFMSheetMetal_IrregularCornerFilletRadiusNotchIssue.Cast(aFeature)
+                aShapeIdVector = MTKConverter_Report.__GetShapesId(aICFRNIssue.Notch().Shape(), theBRep, cadex.ModelData_ST_Edge)
                 theOrderedFeatureList.Append(aFeature, aShapeIdVector)
             elif mtk.DFMSheetMetal_InconsistentRadiusBendIssue.CompareType(aFeature):
                 aIRBIssue = mtk.DFMSheetMetal_InconsistentRadiusBendIssue.Cast(aFeature)
@@ -1146,6 +1201,7 @@ class MTKConverter_Report:
                 elif (mtk.DFMSheetMetal_BendIssue.CompareType(aFeature)
                       or mtk.DFMSheetMetal_FlatPatternInterferenceIssue.CompareType(aFeature)
                       or mtk.DFMSheetMetal_HoleIssue.CompareType(aFeature)
+                      or mtk.DFMSheetMetal_IrregularCornerFilletRadiusNotchIssue.CompareType(aFeature)
                       or mtk.DFMSheetMetal_IrregularSizeNotchIssue.CompareType(aFeature)
                       or mtk.DFMSheetMetal_IrregularSizeTabIssue.CompareType(aFeature)
                       or mtk.DFMSheetMetal_LargeDepthBeadIssue.CompareType(aFeature)
@@ -1215,6 +1271,7 @@ class MTKConverter_Report:
             MTKConverter_Report.__WriteParameter(aWriter, "Length",    "mm", theData.myLength)
             MTKConverter_Report.__WriteParameter(aWriter, "Width",     "mm", theData.myWidth)
             MTKConverter_Report.__WriteParameter(aWriter, "Thickness", "mm", theData.myThickness)
+            MTKConverter_Report.__WriteParameter(aWriter, "Perimeter", "mm", theData.myPerimeter)
             aWriter.CloseArraySection()
 
             theWriter.WriteRawData(aStream.getvalue())

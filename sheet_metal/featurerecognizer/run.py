@@ -30,7 +30,6 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-import subprocess
 import sys
 
 from os.path import abspath, dirname
@@ -38,16 +37,6 @@ from pathlib import Path
 
 from featurerecognizer import main
 
-aPath = abspath(dirname(Path(__file__).resolve()))
-aSource = aPath + "/../../models/Power_box_Chasis.STEP"
+aSource = abspath(dirname(Path(__file__).resolve()) + "/../../models/Power_box_Chasis.STEP")
 
-aPathToScript = aPath + r"/featurerecognizer.py"
-import cadexchanger
-aPathToLicensingTool = abspath(dirname(Path(cadexchanger.__file__).resolve()) + r"/bin/LicensingTool")
-aSDKRet = subprocess.run([aPathToLicensingTool, aPathToScript, aPath + r"/../../cadex_license.lic", aPath + r"/sdk_runtime_key.lic"])
-aMTKRet = subprocess.run([aPathToLicensingTool, aPathToScript, aPath + r"/../../mtk_license.lic", aPath + r"/mtk_runtime_key.lic"])
-
-if aSDKRet.returncode == 0 and aMTKRet.returncode == 0:
-    sys.exit(main(aSource))
-else:
-    sys.exit(aSDKRet.returncode or aMTKRet.returncode)
+sys.exit(main(aSource))
