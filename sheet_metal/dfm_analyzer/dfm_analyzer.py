@@ -41,16 +41,20 @@ sys.path.append(os.path.abspath(os.path.dirname(Path(__file__).resolve()) + "/..
 import cadex_license as license
 import mtk_license
 
-import featuregroup
-import shapeprocessor
+import feature_group
+import shape_processor
 
 def SmallDistanceIssueName(theIssue: mtk.DFMSheetMetal_SmallDistanceBetweenFeaturesIssue):
+    if mtk.DFMSheetMetal_SmallDistanceBetweenBendAndLouverIssue.CompareType(theIssue):
+        return "Small Distance Between Bend And Louver Issue(s)"
     if mtk.DFMSheetMetal_SmallDistanceBetweenHoleAndBendIssue.CompareType(theIssue):
         return "Small Distance Between Hole And Bend Issue(s)"
     elif mtk.DFMSheetMetal_SmallDistanceBetweenHoleAndCutoutIssue.CompareType(theIssue):
         return "Small Distance Between Hole And Cutout Issue(s)"
     elif mtk.DFMSheetMetal_SmallDistanceBetweenHoleAndEdgeIssue.CompareType(theIssue):
         return "Small Distance Between Hole And Edge Issue(s)"
+    elif mtk.DFMSheetMetal_SmallDistanceBetweenHoleAndLouverIssue.CompareType(theIssue):
+        return "Small Distance Between Hole And Louver Issue(s)"
     elif mtk.DFMSheetMetal_SmallDistanceBetweenHoleAndNotchIssue.CompareType(theIssue):
         return "Small Distance Between Hole And Notch Issue(s)"
     elif mtk.DFMSheetMetal_SmallDistanceBetweenHolesIssue.CompareType(theIssue):
@@ -66,106 +70,110 @@ def SmallDistanceIssueName(theIssue: mtk.DFMSheetMetal_SmallDistanceBetweenFeatu
 def PrintFeatureParameters(theIssue: mtk.MTKBase_Feature):
     if mtk.DFMSheetMetal_SmallRadiusBendIssue.CompareType(theIssue):
         aSRBIssue = mtk.DFMSheetMetal_SmallRadiusBendIssue.Cast(theIssue)
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("expected min radius", aSRBIssue.ExpectedMinRadius(), "mm")
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("actual radius",       aSRBIssue.ActualRadius(),      "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("expected min radius", aSRBIssue.ExpectedMinRadius(), "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("actual radius",       aSRBIssue.ActualRadius(),      "mm")
     elif mtk.DFMSheetMetal_SmallDiameterHoleIssue.CompareType(theIssue):
         aSDHIssue = mtk.DFMSheetMetal_SmallDiameterHoleIssue.Cast(theIssue)
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("expected min diameter", aSDHIssue.ExpectedMinDiameter(), "mm")
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("actual diameter",       aSDHIssue.ActualDiameter(),      "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("expected min diameter", aSDHIssue.ExpectedMinDiameter(), "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("actual diameter",       aSDHIssue.ActualDiameter(),      "mm")
     elif mtk.DFMSheetMetal_SmallDistanceBetweenFeaturesIssue.CompareType(theIssue):
         aSDBFIssue = mtk.DFMSheetMetal_SmallDistanceBetweenFeaturesIssue.Cast(theIssue)
-        featuregroup.FeatureGroupManager.PrintFeatureParameter(
+        feature_group.FeatureGroupManager.PrintFeatureParameter(
             "expected min distance", aSDBFIssue.ExpectedMinDistanceBetweenFeatures(), "mm")
-        featuregroup.FeatureGroupManager.PrintFeatureParameter(
+        feature_group.FeatureGroupManager.PrintFeatureParameter(
             "actual distance",       aSDBFIssue.ActualDistanceBetweenFeatures(),      "mm")
     elif mtk.DFMSheetMetal_FlatPatternInterferenceIssue.CompareType(theIssue):
         pass #no parameters
     elif mtk.DFMSheetMetal_IrregularCornerFilletRadiusNotchIssue.CompareType(theIssue):
         aICFRNIssue = mtk.DFMSheetMetal_IrregularCornerFilletRadiusNotchIssue.Cast(theIssue)
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("expected corner fillet radius", aICFRNIssue.ExpectedCornerFilletRadius(), "mm")
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("actual corner fillet radius",   aICFRNIssue.ActualCornerFilletRadius(),   "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("expected corner fillet radius", aICFRNIssue.ExpectedCornerFilletRadius(), "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("actual corner fillet radius",   aICFRNIssue.ActualCornerFilletRadius(),   "mm")
     elif mtk.DFMSheetMetal_IrregularSizeBendReliefIssue.CompareType(theIssue):
         aISBRIssue = mtk.DFMSheetMetal_IrregularSizeBendReliefIssue.Cast(theIssue)
         anExpectedRelief = aISBRIssue.ExpectedMinBendRelief()
         aFirstActualRelief = aISBRIssue.FirstActualRelief()
         aSecondActualRelief = aISBRIssue.SecondActualRelief()
 
-        featuregroup.FeatureGroupManager.PrintFeatureParameter (
+        feature_group.FeatureGroupManager.PrintFeatureParameter (
             "expected min relief size (LxW)",
-            featuregroup.Pair (anExpectedRelief.Length(), anExpectedRelief.Width()),
+            feature_group.Pair (anExpectedRelief.Length(), anExpectedRelief.Width()),
             "mm")
         if (not aFirstActualRelief.IsNull()) and (not aSecondActualRelief.IsNull()):
-            featuregroup.FeatureGroupManager.PrintFeatureParameter (
+            feature_group.FeatureGroupManager.PrintFeatureParameter (
                 "first actual relief size (LxW)",
-                featuregroup.Pair(aFirstActualRelief.Length(), aFirstActualRelief.Width()),
+                feature_group.Pair(aFirstActualRelief.Length(), aFirstActualRelief.Width()),
                 "mm")
-            featuregroup.FeatureGroupManager.PrintFeatureParameter (
+            feature_group.FeatureGroupManager.PrintFeatureParameter (
                 "second actual relief size (LxW)",
-                featuregroup.Pair(aSecondActualRelief.Length(), aSecondActualRelief.Width()),
+                feature_group.Pair(aSecondActualRelief.Length(), aSecondActualRelief.Width()),
                 "mm")
         elif aFirstActualRelief.IsNull():
-            featuregroup.FeatureGroupManager.PrintFeatureParameter (
+            feature_group.FeatureGroupManager.PrintFeatureParameter (
                 "actual relief size (LxW)",
-                featuregroup.Pair(aSecondActualRelief.Length(), aSecondActualRelief.Width()),
+                feature_group.Pair(aSecondActualRelief.Length(), aSecondActualRelief.Width()),
                 "mm")
         else:
-            featuregroup.FeatureGroupManager.PrintFeatureParameter (
+            feature_group.FeatureGroupManager.PrintFeatureParameter (
                 "actual relief size (LxW)",
-                featuregroup.Pair(aFirstActualRelief.Length(), aFirstActualRelief.Width()),
+                feature_group.Pair(aFirstActualRelief.Length(), aFirstActualRelief.Width()),
                 "mm")
     elif mtk.DFMSheetMetal_LargeDepthBeadIssue.CompareType(theIssue):
         aLDBIssue = mtk.DFMSheetMetal_LargeDepthBeadIssue.Cast(theIssue)
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("expected max depth", aLDBIssue.ExpectedMaxDepth(), "mm")
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("actual depth",       aLDBIssue.ActualDepth(),      "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("expected max depth", aLDBIssue.ExpectedMaxDepth(), "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("actual depth",       aLDBIssue.ActualDepth(),      "mm")
+    elif mtk.DFMSheetMetal_SmallDepthLouverIssue.CompareType(theIssue):
+        aSDLIssue = mtk.DFMSheetMetal_SmallDepthLouverIssue.Cast(theIssue)
+        feature_group.FeatureGroupManager.PrintFeatureParameter("expected min depth", aSDLIssue.ExpectedMinDepth(), "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("actual depth",       aSDLIssue.ActualDepth(),      "mm")
     elif mtk.DFMSheetMetal_InconsistentRadiusBendIssue.CompareType(theIssue):
         aIRBIssue = mtk.DFMSheetMetal_InconsistentRadiusBendIssue.Cast(theIssue)
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("expected max radius", aIRBIssue.ExpectedRadius(), "mm")
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("actual radius",       aIRBIssue.ActualRadius(),   "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("expected max radius", aIRBIssue.ExpectedRadius(), "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("actual radius",       aIRBIssue.ActualRadius(),   "mm")
     elif mtk.DFMSheetMetal_SmallLengthFlangeIssue.CompareType(theIssue):
         aSLFIssue = mtk.DFMSheetMetal_SmallLengthFlangeIssue.Cast(theIssue)
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("expected min length", aSLFIssue.ExpectedMinLength(), "mm")
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("actual length",       aSLFIssue.ActualLength(),      "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("expected min length", aSLFIssue.ExpectedMinLength(), "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("actual length",       aSLFIssue.ActualLength(),      "mm")
     elif mtk.DFMSheetMetal_IrregularSizeNotchIssue.CompareType(theIssue):
         aISNIssue = mtk.DFMSheetMetal_IrregularSizeNotchIssue.Cast(theIssue)
-        featuregroup.FeatureGroupManager.PrintFeatureParameter(
+        feature_group.FeatureGroupManager.PrintFeatureParameter(
             "expected size (LxW)",
-            featuregroup.Pair(aISNIssue.ExpectedLength(), aISNIssue.ExpectedWidth()),
+            feature_group.Pair(aISNIssue.ExpectedLength(), aISNIssue.ExpectedWidth()),
             "mm")
-        featuregroup.FeatureGroupManager.PrintFeatureParameter(
+        feature_group.FeatureGroupManager.PrintFeatureParameter(
             "actual size (LxW)",
-            featuregroup.Pair(aISNIssue.ActualLength(), aISNIssue.ActualWidth()),
+            feature_group.Pair(aISNIssue.ActualLength(), aISNIssue.ActualWidth()),
             "mm")
     elif mtk.DFMSheetMetal_IrregularSizeTabIssue.CompareType(theIssue):
         aISTIssue = mtk.DFMSheetMetal_IrregularSizeTabIssue.Cast(theIssue)
-        featuregroup.FeatureGroupManager.PrintFeatureParameter(
+        feature_group.FeatureGroupManager.PrintFeatureParameter(
             "expected size (LxW)",
-            featuregroup.Pair(aISTIssue.ExpectedLength(), aISTIssue.ExpectedWidth()),
+            feature_group.Pair(aISTIssue.ExpectedLength(), aISTIssue.ExpectedWidth()),
             "mm")
-        featuregroup.FeatureGroupManager.PrintFeatureParameter(
+        feature_group.FeatureGroupManager.PrintFeatureParameter(
             "actual size (LxW)",
-            featuregroup.Pair(aISTIssue.ActualLength(), aISTIssue.ActualWidth()),
+            feature_group.Pair(aISTIssue.ActualLength(), aISTIssue.ActualWidth()),
             "mm")
     elif mtk.DFMSheetMetal_NonStandardSheetThicknessIssue.CompareType(theIssue):
         aNSSTIssue = mtk.DFMSheetMetal_NonStandardSheetThicknessIssue.Cast(theIssue)
-        featuregroup.FeatureGroupManager.PrintFeatureParameter(
+        feature_group.FeatureGroupManager.PrintFeatureParameter(
             "nearest standard sheet thickness", aNSSTIssue.NearestStandardSheetThickness(), "mm")
-        featuregroup.FeatureGroupManager.PrintFeatureParameter(
+        feature_group.FeatureGroupManager.PrintFeatureParameter(
             "actual sheet thickness",           aNSSTIssue.ActualSheetThickness(),          "mm")
     elif mtk.DFMSheetMetal_NonStandardSheetSizeIssue.CompareType(theIssue):
         aNSSSIssue = mtk.DFMSheetMetal_NonStandardSheetSizeIssue.Cast(theIssue)
         aNearestStandardSize = aNSSSIssue.NearestStandardSheetSize()
         anActualSize = aNSSSIssue.ActualSheetSize()
-        featuregroup.FeatureGroupManager.PrintFeatureParameter(
+        feature_group.FeatureGroupManager.PrintFeatureParameter(
             "nearest standard sheet size (LxW)",
-            featuregroup.Pair(aNearestStandardSize.Length(), aNearestStandardSize.Width()),
+            feature_group.Pair(aNearestStandardSize.Length(), aNearestStandardSize.Width()),
             "mm")
-        featuregroup.FeatureGroupManager.PrintFeatureParameter(
+        feature_group.FeatureGroupManager.PrintFeatureParameter(
             "actual sheet size (LxW)",
-            featuregroup.Pair(anActualSize.Length(), anActualSize.Width()),
+            feature_group.Pair(anActualSize.Length(), anActualSize.Width()),
             "mm")
 
 def PrintIssues(theIssueList: mtk.MTKBase_FeatureList):
-    aManager = featuregroup.FeatureGroupManager()
+    aManager = feature_group.FeatureGroupManager()
 
     #group by parameters to provide more compact information about features
     for anIssue in theIssueList:
@@ -181,6 +189,8 @@ def PrintIssues(theIssueList: mtk.MTKBase_FeatureList):
             aManager.AddFeature("Irregular Size Bend Relief Issue(s)", "Bend(s)", True, anIssue)
         elif mtk.DFMSheetMetal_LargeDepthBeadIssue.CompareType(anIssue):
             aManager.AddFeature("Large Depth Bead Issue(s)", "Bead(s)", True, anIssue)
+        elif mtk.DFMSheetMetal_SmallDepthLouverIssue.CompareType(anIssue):
+            aManager.AddFeature("Small Depth Louver Issue(s)", "Louver(s)", True, anIssue)
         elif mtk.DFMSheetMetal_InconsistentRadiusBendIssue.CompareType(anIssue):
             aManager.AddFeature("Inconsistent Radius Bend Issue(s)", "Bend(s)", True, anIssue)
         elif mtk.DFMSheetMetal_SmallLengthFlangeIssue.CompareType(anIssue):
@@ -206,7 +216,7 @@ def CalculateInitialThicknessValue(theShape: cadex.ModelData_Shape):
     aThickness = aVolume / (aSurfaceArea / 2.0)
     return aThickness
 
-class PartProcessor(shapeprocessor.ShapeProcessor):
+class PartProcessor(shape_processor.ShapeProcessor):
     def __init__(self):
         super().__init__()
         self.myAnalyzer = mtk.DFMSheetMetal_Analyzer()

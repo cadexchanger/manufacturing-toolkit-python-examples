@@ -42,8 +42,8 @@ sys.path.append(os.path.abspath(os.path.dirname(Path(__file__).resolve()) + "/..
 import cadex_license as license
 import mtk_license
 
-import featuregroup
-import shapeprocessor
+import feature_group
+import shape_processor
 
 def ToDegrees(theAngleRad: float):
     return theAngleRad * 180.0 / math.pi
@@ -52,16 +52,20 @@ def PrintFeatureParameters(theIssue: mtk.MTKBase_Feature):
     #drilling
     if mtk.DFMMachining_SmallDiameterHoleIssue.CompareType(theIssue):
         aSDHIssue = mtk.DFMMachining_SmallDiameterHoleIssue.Cast(theIssue)
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("expected min diameter", aSDHIssue.ExpectedMinDiameter(), "mm")
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("actual diameter",       aSDHIssue.ActualDiameter(),      "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("expected min diameter", aSDHIssue.ExpectedMinDiameter(), "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("actual diameter",       aSDHIssue.ActualDiameter(),      "mm")
     elif mtk.DFMMachining_DeepHoleIssue.CompareType(theIssue):
         aDHIssue = mtk.DFMMachining_DeepHoleIssue.Cast(theIssue)
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("expected max depth", aDHIssue.ExpectedMaxDepth(), "mm")
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("actual depth",       aDHIssue.ActualDepth(),      "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("expected max depth", aDHIssue.ExpectedMaxDepth(), "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("actual depth",       aDHIssue.ActualDepth(),      "mm")
     elif mtk.DFMMachining_NonStandardDiameterHoleIssue.CompareType(theIssue):
         aNSDHIssue = mtk.DFMMachining_NonStandardDiameterHoleIssue.Cast(theIssue)
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("nearest standard diameter", aNSDHIssue.NearestStandardDiameter(), "mm")
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("actual diameter",           aNSDHIssue.ActualDiameter(),          "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("nearest standard diameter", aNSDHIssue.NearestStandardDiameter(), "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("actual diameter",           aNSDHIssue.ActualDiameter(),          "mm")
+    elif mtk.DFMMachining_NonStandardDrillPointAngleBlindHoleIssue.CompareType(theIssue):
+        aNSDPABHIssue = mtk.DFMMachining_NonStandardDrillPointAngleBlindHoleIssue.Cast(theIssue)
+        feature_group.FeatureGroupManager.PrintFeatureParameter("nearest standard angle", ToDegrees(aNSDPABHIssue.NearestStandardAngle()), "deg")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("actual angle",           ToDegrees(aNSDPABHIssue.ActualAngle()),          "deg")
     elif mtk.DFMMachining_FlatBottomHoleIssue.CompareType(theIssue):
         pass #no parameters
     elif mtk.DFMMachining_NonPerpendicularHoleIssue.CompareType(theIssue):
@@ -70,98 +74,98 @@ def PrintFeatureParameters(theIssue: mtk.MTKBase_Feature):
         pass #no parameters
     elif mtk.DFMMachining_PartialHoleIssue.CompareType(theIssue):
         aPHIssue = mtk.DFMMachining_PartialHoleIssue.Cast(theIssue)
-        featuregroup.FeatureGroupManager.PrintFeatureParameter(
+        feature_group.FeatureGroupManager.PrintFeatureParameter(
             "expected min material percent", aPHIssue.ExpectedMinMaterialPercent(), "")
-        featuregroup.FeatureGroupManager.PrintFeatureParameter(
+        feature_group.FeatureGroupManager.PrintFeatureParameter(
             "actual material percent",       aPHIssue.ActualMaterialPercent(),      "")
     #milling
     elif mtk.DFMMachining_NonStandardRadiusMilledPartFloorFilletIssue.CompareType(theIssue):
         aNSRMPFFIssue = mtk.DFMMachining_NonStandardRadiusMilledPartFloorFilletIssue.Cast(theIssue)
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("nearest standard radius", aNSRMPFFIssue.NearestStandardRadius(), "mm")
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("actual radius",           aNSRMPFFIssue.ActualRadius(),          "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("nearest standard radius", aNSRMPFFIssue.NearestStandardRadius(), "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("actual radius",           aNSRMPFFIssue.ActualRadius(),          "mm")
     elif mtk.DFMMachining_DeepPocketIssue.CompareType(theIssue):
         aDPIssue = mtk.DFMMachining_DeepPocketIssue.Cast(theIssue)
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("expected max depth", aDPIssue.ExpectedMaxDepth(), "mm")
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("actual depth",       aDPIssue.ActualDepth(),      "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("expected max depth", aDPIssue.ExpectedMaxDepth(), "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("actual depth",       aDPIssue.ActualDepth(),      "mm")
     elif mtk.DFMMachining_LargeMilledPartIssue.CompareType(theIssue):
         aLMPIssue = mtk.DFMMachining_LargeMilledPartIssue.Cast(theIssue)
         anExpectedSize = aLMPIssue.ExpectedMaxMilledPartSize()
         anActualSize = aLMPIssue.ActualMilledPartSize()
-        featuregroup.FeatureGroupManager.PrintFeatureParameter(
+        feature_group.FeatureGroupManager.PrintFeatureParameter(
             "expected max size (LxWxH)",
-            featuregroup.Dimension(anExpectedSize.Length(), anExpectedSize.Width(), anExpectedSize.Height()),
+            feature_group.Dimension(anExpectedSize.Length(), anExpectedSize.Width(), anExpectedSize.Height()),
             "mm")
-        featuregroup.FeatureGroupManager.PrintFeatureParameter(
+        feature_group.FeatureGroupManager.PrintFeatureParameter(
             "actual size (LxWxH)",
-            featuregroup.Dimension(anActualSize.Length(), anActualSize.Width(), anActualSize.Height()),
+            feature_group.Dimension(anActualSize.Length(), anActualSize.Width(), anActualSize.Height()),
             "mm")
     elif mtk.DFMMachining_SmallRadiusMilledPartInternalCornerIssue.CompareType(theIssue):
         aSRMPICIssue = mtk.DFMMachining_SmallRadiusMilledPartInternalCornerIssue.Cast(theIssue)
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("expected min radius", aSRMPICIssue.ExpectedMinRadius(), "mm")
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("actual radius",       aSRMPICIssue.ActualRadius(),      "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("expected min radius", aSRMPICIssue.ExpectedMinRadius(), "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("actual radius",       aSRMPICIssue.ActualRadius(),      "mm")
     elif mtk.DFMMachining_NonPerpendicularMilledPartShapeIssue.CompareType(theIssue):
         aNPMPSIssue = mtk.DFMMachining_NonPerpendicularMilledPartShapeIssue.Cast(theIssue)
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("actual angle", ToDegrees (aNPMPSIssue.ActualAngle()), "deg")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("actual angle", ToDegrees (aNPMPSIssue.ActualAngle()), "deg")
     elif mtk.DFMMachining_MilledPartExternalEdgeFilletIssue.CompareType(theIssue):
         pass #no parameters
     elif mtk.DFMMachining_InconsistentRadiusMilledPartFloorFilletIssue.CompareType(theIssue):
         aIRMPFFIssue = mtk.DFMMachining_InconsistentRadiusMilledPartFloorFilletIssue.Cast(theIssue)
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("expected radius", aIRMPFFIssue.ExpectedRadius(), "mm")
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("actual radius",   aIRMPFFIssue.ActualRadius(),   "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("expected radius", aIRMPFFIssue.ExpectedRadius(), "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("actual radius",   aIRMPFFIssue.ActualRadius(),   "mm")
     elif mtk.DFMMachining_NarrowRegionInPocketIssue.CompareType(theIssue):
         aSMNRDIssue = mtk.DFMMachining_NarrowRegionInPocketIssue.Cast(theIssue)
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("expected minimum region size", aSMNRDIssue.ExpectedMinRegionSize(), "mm")
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("actual region size",           aSMNRDIssue.ActualRegionSize(),      "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("expected minimum region size", aSMNRDIssue.ExpectedMinRegionSize(), "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("actual region size",           aSMNRDIssue.ActualRegionSize(),      "mm")
     elif mtk.DFMMachining_LargeDifferenceRegionsSizeInPocketIssue.CompareType(theIssue):
         aLMNRRIssue = mtk.DFMMachining_LargeDifferenceRegionsSizeInPocketIssue.Cast(theIssue)
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("expected regions maximum to minimum size ratio", aLMNRRIssue.ExpectedMaxRegionsMaxToMinSizeRatio(), "")
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("actual regions maximum to minimum size ratio",   aLMNRRIssue.ActualMaxRegionsMaxToMinSizeRatio(),   "")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("expected regions maximum to minimum size ratio", aLMNRRIssue.ExpectedMaxRegionsMaxToMinSizeRatio(), "")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("actual regions maximum to minimum size ratio",   aLMNRRIssue.ActualMaxRegionsMaxToMinSizeRatio(),   "")
     #turning
     elif mtk.DFMMachining_IrregularTurnedPartOuterDiameterProfileReliefIssue.CompareType(theIssue):
         anITPODPRIssue = mtk.DFMMachining_IrregularTurnedPartOuterDiameterProfileReliefIssue.Cast(theIssue)
-        featuregroup.FeatureGroupManager.PrintFeatureParameter(
+        feature_group.FeatureGroupManager.PrintFeatureParameter(
             "expected max incline angle", ToDegrees (anITPODPRIssue.ExpectedMaxFaceInclineAngle()), "deg")
-        featuregroup.FeatureGroupManager.PrintFeatureParameter(
+        feature_group.FeatureGroupManager.PrintFeatureParameter(
             "actual incline angle",       ToDegrees (anITPODPRIssue.ActualFaceInclineAngle()),      "deg")
     elif mtk.DFMMachining_SmallRadiusTurnedPartInternalCornerIssue.CompareType(theIssue):
         aSRTPICIssue = mtk.DFMMachining_SmallRadiusTurnedPartInternalCornerIssue.Cast(theIssue)
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("expected min radius", aSRTPICIssue.ExpectedMinRadius(), "mm")
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("actual radius",       aSRTPICIssue.ActualRadius(),      "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("expected min radius", aSRTPICIssue.ExpectedMinRadius(), "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("actual radius",       aSRTPICIssue.ActualRadius(),      "mm")
     elif mtk.DFMMachining_LargeTurnedPartIssue.CompareType(theIssue):
         aLTPIssue = mtk.DFMMachining_LargeTurnedPartIssue.Cast(theIssue)
         anExpectedSize = aLMPIssue.ExpectedMaxTurnedPartSize()
         anActualSize = aLMPIssue.ActualTurnedPartSize()
-        featuregroup.FeatureGroupManager.PrintFeatureParameter(
+        feature_group.FeatureGroupManager.PrintFeatureParameter(
             "expected max size (LxR)",
-            featuregroup.Pair(anExpectedSize.Length(), anExpectedSize.Radius()),
+            feature_group.Pair(anExpectedSize.Length(), anExpectedSize.Radius()),
             "mm")
-        featuregroup.FeatureGroupManager.PrintFeatureParameter(
+        feature_group.FeatureGroupManager.PrintFeatureParameter(
             "actual size (LxR)",
-            featuregroup.Pair(anActualSize.Length(), anActualSize.Radius()),
+            feature_group.Pair(anActualSize.Length(), anActualSize.Radius()),
             "mm")
     elif mtk.DFMMachining_LongSlenderTurnedPartIssue.CompareType(theIssue):
         aLSTPIssue = mtk.DFMMachining_LongSlenderTurnedPartIssue.Cast(theIssue)
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("expected min length", aLSTPIssue.ExpectedMaxLength(), "mm")
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("actual length",       aLSTPIssue.ActualLength(),      "mm")
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("actual min diameter", aLSTPIssue.ActualMinDiameter(), "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("expected min length", aLSTPIssue.ExpectedMaxLength(), "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("actual length",       aLSTPIssue.ActualLength(),      "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("actual min diameter", aLSTPIssue.ActualMinDiameter(), "mm")
     elif mtk.DFMMachining_SmallDepthBlindBoredHoleReliefIssue.CompareType(theIssue):
         aSDBBHRIssue = mtk.DFMMachining_SmallDepthBlindBoredHoleReliefIssue.Cast(theIssue)
-        featuregroup.FeatureGroupManager.PrintFeatureParameter(
+        feature_group.FeatureGroupManager.PrintFeatureParameter(
             "expected min relief depth", aSDBBHRIssue.ExpectedMinReliefDepth(), "mm")
-        featuregroup.FeatureGroupManager.PrintFeatureParameter(
+        feature_group.FeatureGroupManager.PrintFeatureParameter(
             "actual relief depth",       aSDBBHRIssue.ActualReliefDepth(),      "mm")
-        featuregroup.FeatureGroupManager.PrintFeatureParameter(
+        feature_group.FeatureGroupManager.PrintFeatureParameter(
             "actual diameter",           aSDBBHRIssue.ActualDiameter(),         "mm")
     elif mtk.DFMMachining_DeepBoredHoleIssue.CompareType(theIssue):
         aDBHIssue = mtk.DFMMachining_DeepBoredHoleIssue.Cast(theIssue)
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("expected max depth", aDBHIssue.ExpectedMaxDepth(), "mm")
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("actual depth",       aDBHIssue.ActualDepth(),      "mm")
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("actual diameter",    aDBHIssue.ActualDiameter(),   "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("expected max depth", aDBHIssue.ExpectedMaxDepth(), "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("actual depth",       aDBHIssue.ActualDepth(),      "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("actual diameter",    aDBHIssue.ActualDiameter(),   "mm")
     elif mtk.DFMMachining_SquareEndKeywayIssue.CompareType(theIssue):
         pass #no parameters
 
 def PrintIssues(theIssueList: mtk.MTKBase_FeatureList):
-    aManager = featuregroup.FeatureGroupManager()
+    aManager = feature_group.FeatureGroupManager()
 
     #group by parameters to provide more compact information about features
     for anIssue in theIssueList:
@@ -172,6 +176,8 @@ def PrintIssues(theIssueList: mtk.MTKBase_FeatureList):
             aManager.AddFeature("Deep Hole Issue(s)", "Hole(s)", True, anIssue)
         elif mtk.DFMMachining_NonStandardDiameterHoleIssue.CompareType(anIssue):
             aManager.AddFeature("Non Standard Diameter Hole Issue(s)", "Hole(s)", True, anIssue)
+        elif mtk.DFMMachining_NonStandardDrillPointAngleBlindHoleIssue.CompareType(anIssue):
+            aManager.AddFeature("Non Standard Drill Point Angle Blind Hole Issue(s)", "Hole(s)", True, anIssue)
         elif mtk.DFMMachining_FlatBottomHoleIssue.CompareType(anIssue):
             aManager.AddFeature("Flat Bottom Hole Issue(s)", "", False, anIssue)
         elif mtk.DFMMachining_NonPerpendicularHoleIssue.CompareType(anIssue):
@@ -217,7 +223,7 @@ def PrintIssues(theIssueList: mtk.MTKBase_FeatureList):
 
     aManager.Print ("issues", PrintFeatureParameters)
 
-class PartProcessor(shapeprocessor.SolidProcessor):
+class PartProcessor(shape_processor.SolidProcessor):
     def __init__(self, theOperation):
         super().__init__()
         self.myOperation = theOperation

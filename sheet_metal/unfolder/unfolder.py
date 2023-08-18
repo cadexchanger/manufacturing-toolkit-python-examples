@@ -40,51 +40,6 @@ sys.path.append(os.path.abspath(os.path.dirname(Path(__file__).resolve()) + "/..
 import cadex_license as license
 import mtk_license
 
-class PartCollector(cadex.ModelData_Model_VoidElementVisitor):
-    def __init__(self, thePartVec: list):
-        super().__init__()
-        self.myPartVec = thePartVec
-
-    def VisitPart(self, thePart: cadex.ModelData_Part):
-        self.myPartVec.append(thePart)
-
-# Compute approximate thickness value, which can be used as the input thickness value for SheetMetal_Unfolder.
-def CalculateInitialThicknessValue(theShape: cadex.ModelData_Shape):
-    aVolume = cadex.ModelAlgo_ValidationProperty_ComputeVolume(theShape)
-    aSurfaceArea = cadex.ModelAlgo_ValidationProperty_ComputeSurfaceArea(theShape)
-    aThickness = aVolume / (aSurfaceArea / 2.0)
-    return aThickness
-
-def Unfold(thePart: cadex.ModelData_Part, thePartIndex: int):
-    aPartName = ""
-    if thePart.Name().IsEmpty():
-        aPartName = "noname"
-    else:
-        aPartName = thePart.Name()
-
-    aBRep = thePart.BRepRepresentation()
-    if aBRep:
-        anUnfolder = mtk.SheetMetal_Unfolder()
-        # Iterate over bodies
-        aBodyList = aBRep.Get()
-        for aBody in aBodyList:
-            aShapeIt = cadex.ModelData_Shape_Iterator(aBody)
-            i = 0
-            while aShapeIt.HasNext():
-                aShape = aShapeIt.Next()
-                if aShape.Type() == cadex.ModelData_ST_Solid:
-                    print("Part #", thePartIndex, " [\"", aPartName, "\"] - solid #", i, " has:", sep="")
-                    i += 1
-                    aSolid = cadex.ModelData_Solid_Cast(aShape)
-                    aThickness = CalculateInitialThicknessValue(aSolid)
-                    return anUnfolder.Perform(aSolid, aThickness)
-                elif aShape.Type() == cadex.ModelData_ST_Shell:
-                    print("Part #", thePartIndex, " [\"", aPartName, "\"] - shell #", i, " has:", sep="")
-                    i += 1
-                    aShell = cadex.ModelData_Shell_Cast(aShape)
-                    return anUnfolder.Perform(aShell)
-    return mtk.SheetMetal_FlatPattern()
-
 def WriteToDrawing(theFlatPattern: mtk.SheetMetal_FlatPattern, theFilePath: str):
     aDrawing = theFlatPattern.ToDrawing();
     if aDrawing.IsNull():
@@ -94,6 +49,74 @@ def WriteToDrawing(theFlatPattern: mtk.SheetMetal_FlatPattern, theFilePath: str)
     aWriter = cadex.ModelData_ModelWriter()
     aRes = aWriter.Write(aDrawingModel, cadex.Base_UTF16String(theFilePath))
     return aRes
+
+def PrintFlatPattern(theFlatPattern: mtk.SheetMetal_FlatPattern):
+    print("    Flat Pattern with:")
+    print("          length: ",    theFlatPattern.Length(),    " mm", sep="")
+    print("          width: ",     theFlatPattern.Width(),     " mm", sep="")
+    print("          thickness: ", theFlatPattern.Thickness(), " mm", sep="")
+    print("          perimeter: ", theFlatPattern.Perimeter(), " mm", sep="")
+
+def PrintFlatPatternAndWriteToDrawing(theFlatPattern: mtk.SheetMetal_FlatPattern, theDrawingFileName: str):
+    if theFlatPattern.IsNull():
+        print("    Failed to create flat pattern.")
+
+    PrintFlatPattern(theFlatPattern)
+
+    if WriteToDrawing(theFlatPattern, theDrawingFileName):
+        print("    A drawing of the flat pattern has been saved to ", str(theDrawingFileName), sep="")
+    else:
+        print("    Failed to save drawing of the flat pattern to ", str(theDrawingFileName), sep="")
+
+# Compute approximate thickness value, which can be used as the input thickness value for SheetMetal_Unfolder.
+def CalculateInitialThicknessValue(theShape: cadex.ModelData_Shape):
+    aVolume = cadex.ModelAlgo_ValidationProperty_ComputeVolume(theShape)
+    aSurfaceArea = cadex.ModelAlgo_ValidationProperty_ComputeSurfaceArea(theShape)
+    aThickness = aVolume / (aSurfaceArea / 2.0)
+    return aThickness
+
+class PartProcessor(cadex.ModelData_Model_VoidElementVisitor):
+    def __init__(self, theDrawingFolderPath: str):
+        super().__init__()
+        self.myPartIndex = 0
+        self.myUnfolder = mtk.SheetMetal_Unfolder()
+        self.myDrawingFolderPath = theDrawingFolderPath
+
+    def __DrawingFileName(self, thePartName: str, theShapeIndex: str, theShapeName: str):
+        aPartName = "Part " + str(self.myPartIndex) + " [" + thePartName + "]"
+        aShapeName = theShapeName + " " + str(theShapeIndex)
+        aFileName = cadex.Base_UTF16String(self.myDrawingFolderPath + "/" + aPartName + " - " + aShapeName + " - drawing.dxf")
+        return aFileName
+
+    def ProcessSolid(self, theSolid: cadex.ModelData_Solid, thePartName: str, theShapeIndex: int):
+        aThickness = CalculateInitialThicknessValue(theSolid)
+        aFlatPattern = self.myUnfolder.Perform(theSolid, aThickness)
+        aFileName = self.__DrawingFileName(thePartName, theShapeIndex, "solid")
+        PrintFlatPatternAndWriteToDrawing(aFlatPattern, aFileName)
+
+    def ProcessShell(self, theShell: cadex.ModelData_Shell, thePartName: str, theShapeIndex: int):
+        aFlatPattern = self.myUnfolder.Perform(theShell)
+        aFileName = self.__DrawingFileName(thePartName, theShapeIndex, "shell")
+        PrintFlatPatternAndWriteToDrawing(aFlatPattern, aFileName)
+
+    def VisitPart(self, thePart: cadex.ModelData_Part):
+        aPartName = "noname" if thePart.Name().IsEmpty() else str(thePart.Name())
+        aBRep = thePart.BRepRepresentation()
+        if aBRep:
+            aBodyList = aBRep.Get()
+            i = 0
+            for aBody in aBodyList:
+                aShapeIt = cadex.ModelData_Shape_Iterator(aBody)
+                for aShape in aShapeIt:
+                    if aShape.Type() == cadex.ModelData_ST_Solid:
+                        print("Part #", self.myPartIndex, " [\"", aPartName, "\"] - solid #", i, " has:", sep="")
+                        self.ProcessSolid(cadex.ModelData_Solid.Cast(aShape), aPartName, i)
+                        i += 1
+                    elif aShape.Type() == cadex.ModelData_ST_Shell:
+                        print("Part #", self.myPartIndex, " [\"", aPartName, "\"] - shell #", i, " has:", sep="")
+                        self.ProcessShell(cadex.ModelData_Shell.Cast (aShape), aPartName, i)
+                        i += 1
+        self.myPartIndex += 1
 
 def main(theSource: str, theDrawingPath: str):
     aKey = license.Value()
@@ -116,45 +139,17 @@ def main(theSource: str, theDrawingPath: str):
 
     print("Model: ", aModel.Name(), "\n", sep="")
 
-    aPartVec = list()
-    aPartCollector = PartCollector(aPartVec)
-    aVisitor = cadex.ModelData_SceneGraphElementUniqueVisitor(aPartCollector)
+    aPartProcessor = PartProcessor(theDrawingPath)
+    aVisitor = cadex.ModelData_SceneGraphElementUniqueVisitor(aPartProcessor)
     aModel.AcceptElementVisitor(aVisitor)
 
-    aPartIndex = 0
-    if aPartIndex >= aPartVec.__sizeof__():
-        print("Part #", aPartIndex, " was not found.", sep="")
-        return 1
-
-    aPart = aPartVec[aPartIndex]
-    aFlatPattern = Unfold(aPart, aPartIndex)
-
-    print("    Flat Pattern with:")
-
-    if not aFlatPattern.IsNull():
-        print("          length: ",    aFlatPattern.Length(),    " mm")
-        print("          width: ",     aFlatPattern.Width(),     " mm")
-        print("          thickness: ", aFlatPattern.Thickness(), " mm")
-        print("          perimeter: ", aFlatPattern.Perimeter(), " mm")
-
-    # Save unfolded shape as 2D DXF drawing
-    if WriteToDrawing(aFlatPattern, theDrawingPath):
-        aPartName = ""
-        if aPart.Name().IsEmpty():
-            aPartName = "noname"
-        else:
-            aPartName = aPart.Name()
-        print("A drawing of the unfolded view of the part #", aPartIndex, " [\"", aPartName, "\"] has been saved to ", theDrawingPath, sep="")
-    else:
-        print("Failed to save drawing of the unfolded view to ", theDrawingPath, sep="")
-        return 1
     return 0
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        print("Usage: <input_file> <output_file>, where:")
+        print("Usage: <input_file> <output_folder>, where:")
         print("    <input_file> is a name of the file to be read")
-        print("    <output_file> is a name of the DXF file with drawing to be written")
+        print("    <output_folder> is a name of the folder where DXF files with drawing to be written")
         sys.exit()
 
     aSource = os.path.abspath(sys.argv[1])

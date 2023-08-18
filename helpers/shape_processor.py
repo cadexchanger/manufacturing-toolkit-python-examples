@@ -47,14 +47,13 @@ class ShapeProcessor(cadex.ModelData_Model_VoidElementVisitor):
                 for aShape in aShapeIt:
                     if aShape.Type() == cadex.ModelData_ST_Solid:
                         print("Part #", self.myPartIndex, " [\"", aPartName, "\"] - solid #", i, " has:", sep="")
-                        self.myPartIndex += 1
                         i += 1
                         self.ProcessSolid(cadex.ModelData_Solid.Cast(aShape))
                     elif aShape.Type() == cadex.ModelData_ST_Shell:
                         print("Part #", self.myPartIndex, " [\"", aPartName, "\"] - shell #", i, " has:", sep="")
-                        self.myPartIndex += 1
                         i += 1
                         self.ProcessShell(cadex.ModelData_Shell.Cast (aShape))
+        self.myPartIndex += 1
 
     @abstractmethod
     def ProcessSolid(self, theSolid: cadex.ModelData_Solid):
@@ -80,9 +79,9 @@ class SolidProcessor(cadex.ModelData_Model_VoidElementVisitor):
                 for aShape in aShapeIt:
                     if aShape.Type() == cadex.ModelData_ST_Solid:
                         print("Part #", self.myPartIndex, " [\"", aPartName, "\"] - solid #", i, " has:", sep="")
-                        self.myPartIndex += 1
                         i += 1
                         self.ProcessSolid (cadex.ModelData_Solid.Cast (aShape))
+        self.myPartIndex += 1
 
     @abstractmethod
     def ProcessSolid(self, theSolid: cadex.ModelData_Solid):

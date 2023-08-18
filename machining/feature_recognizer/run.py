@@ -35,7 +35,7 @@ import sys
 from pathlib import Path
 from os.path import abspath, dirname
 
-from featurerecognizer import main
+from feature_recognizer import main
 
 aSource = abspath(dirname(Path(__file__).resolve()) + "/../../models/Fresamento_CAM1_v3.stp")
 anOperation = "milling"

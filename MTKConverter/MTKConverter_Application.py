@@ -70,15 +70,15 @@ class MTKConverter_ReturnCode(Enum):
 
 class MTKConverter_Application:
     def __init__(self):
-        self.myCDXFBWriterParameters = core.ModelData_WriterParameters()
+        self.myCDXWEBWriterParameters = core.ModelData_WriterParameters()
 
-        #setup CDXFB params
-        self.myCDXFBWriterParameters.SetFileFormat(core.ModelData_WriterParameters.Cdxfb)
-        self.myCDXFBWriterParameters.SetWriteBRepRepresentation(True)
-        self.myCDXFBWriterParameters.SetWritePolyRepresentation(True)
-        self.myCDXFBWriterParameters.SetPreferredLOD(core.ModelData_RM_Any)
-        self.myCDXFBWriterParameters.SetWriteTextures(True)
-        self.myCDXFBWriterParameters.SetWritePMI(True)
+        #setup CDXWEB params
+        self.myCDXWEBWriterParameters.SetFileFormat(core.ModelData_WriterParameters.CDXWEB)
+        self.myCDXWEBWriterParameters.SetWriteBRepRepresentation(True)
+        self.myCDXWEBWriterParameters.SetWritePolyRepresentation(True)
+        self.myCDXWEBWriterParameters.SetPreferredLOD(core.ModelData_RM_Any)
+        self.myCDXWEBWriterParameters.SetWriteTextures(True)
+        self.myCDXWEBWriterParameters.SetWritePMI(True)
 
     @staticmethod
     def __ProcessType(theProcessName: str):
@@ -186,7 +186,7 @@ class MTKConverter_Application:
                  theReport: MTKConverter_Report,
                  theProcessModel: core.ModelData_Model):
         print("Exporting ", theFolderPath, "...", sep="", end="")
-        aModelPath = theFolderPath + "/" + str(theModel.Name()) + ".cdxfb" + "/scenegraph.cdxfb"
+        aModelPath = theFolderPath + "/" + str(theModel.Name()) + ".cdxweb" + "/scenegraph.cdxweb"
         if not theModel.Save(core.Base_UTF16String(aModelPath), theWriterParams):
             print("\nERROR: Failed to export ", aModelPath, ". Exiting", sep="")
             return MTKConverter_ReturnCode.ExportError
@@ -197,7 +197,7 @@ class MTKConverter_Application:
             return MTKConverter_ReturnCode.ExportError
 
         if not theProcessModel.IsEmpty():
-            aProcessModelPath = theFolderPath + "/" + str(theProcessModel.Name()) + ".cdxfb" + "/scenegraph.cdxfb"
+            aProcessModelPath = theFolderPath + "/" + str(theProcessModel.Name()) + ".cdxweb" + "/scenegraph.cdxweb"
             if not theProcessModel.Save(core.Base_UTF16String(aProcessModelPath), theWriterParams):
                 print("\nERROR: Failed to export ", aProcessModelPath, ". Exiting", sep="")
                 return MTKConverter_ReturnCode.ExportError
@@ -224,7 +224,7 @@ class MTKConverter_Application:
                 aRes = MTKConverter_Application.__Process (theProcess, aModel, aReport, aProcessModel)
                 print("Done.")
             if aRes == MTKConverter_ReturnCode.MTKConverter_RC_OK:
-                aRes = MTKConverter_Application.__Export (theTarget, self.myCDXFBWriterParameters, aModel, aReport, aProcessModel)
+                aRes = MTKConverter_Application.__Export (theTarget, self.myCDXWEBWriterParameters, aModel, aReport, aProcessModel)
                 print("Done.")
         except core.BaseError_UnsupportedVersion as anE:
             print("Failed.\nERROR: ", anE.What(), sep="")

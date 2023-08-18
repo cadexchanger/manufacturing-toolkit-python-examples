@@ -32,11 +32,12 @@
 
 import sys
 
-from os.path import abspath, dirname
 from pathlib import Path
+from os.path import abspath, dirname
 
-from featurerecognizer import main
+from dfm_analyzer import main
 
-aSource = abspath(dirname(Path(__file__).resolve()) + "/../../models/Power_box_Chasis.STEP")
+aSource = abspath(dirname(Path(__file__).resolve()) + "/../../models/Fresamento_CAM1_v3.stp")
+anOperation = "milling"
 
-sys.exit(main(aSource))
+sys.exit(main(aSource, anOperation))

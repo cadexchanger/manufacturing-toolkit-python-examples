@@ -74,7 +74,6 @@ class PartProcessor(cadex.ModelData_Model_VoidElementVisitor):
                     if aShape.Type() == cadex.ModelData_ST_Solid:
                         aSolid = cadex.ModelData_Solid.Cast(aShape)
                         print("Part #", self.myPartIndex, " [\"", aPartName, "\"] - solid #", i, " has:", sep="")
-                        self.myPartIndex += 1
                         self.ProcessSolid (aSolid)
                         i+=1
 
@@ -87,9 +86,9 @@ class PartProcessor(cadex.ModelData_Model_VoidElementVisitor):
                     if aPVS.TypeId() == cadex.ModelData_IndexedTriangleSet.GetTypeId():
                         aMesh = cadex.ModelData_IndexedTriangleSet.Cast(aPVS)
                         print("Part #", self.myPartIndex, " [\"", aPartName, "\"] - mesh #", i, " has:", sep="")
-                        self.myPartIndex += 1
                         self.ProcessMesh (aMesh)
                         i+=1
+        self.myPartIndex += 1
 
 def main(theSource: str, theRes: int):
     aKey = license.Value()

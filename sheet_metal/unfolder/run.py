@@ -38,6 +38,6 @@ from pathlib import Path
 from unfolder import main
 
 aSource = abspath(dirname(Path(__file__).resolve()) + "/../../models/Part2.stp")
-aTraget = abspath(dirname(Path(__file__).resolve()) + "/drawing.dxf")
+aTraget = abspath(dirname(Path(__file__).resolve()))
 
 sys.exit(main(aSource, aTraget))

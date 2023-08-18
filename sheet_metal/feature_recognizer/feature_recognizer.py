@@ -42,8 +42,8 @@ sys.path.append(os.path.abspath(os.path.dirname(Path(__file__).resolve()) + "/..
 import cadex_license as license
 import mtk_license
 
-import featuregroup
-import shapeprocessor
+import feature_group
+import shape_processor
 
 def ToDegrees(theAngleRad: float):
     return theAngleRad * 180.0 / math.pi
@@ -83,7 +83,7 @@ def NotchName(theNotch: mtk.SheetMetal_Notch):
     return "Notch(es)"
 
 #group by parameters to provide more compact information about features
-def GroupByParameters(theFeatureList: mtk.MTKBase_FeatureList, theManager: featuregroup.FeatureGroupManager):
+def GroupByParameters(theFeatureList: mtk.MTKBase_FeatureList, theManager: feature_group.FeatureGroupManager):
     for aFeature in theFeatureList:
         if mtk.SheetMetal_Bead.CompareType(aFeature):
             theManager.AddFeature("Bead(s)", "Bead(s)", True, aFeature)
@@ -111,45 +111,47 @@ def GroupByParameters(theFeatureList: mtk.MTKBase_FeatureList, theManager: featu
 def PrintFeatureParameters(theFeature: mtk.MTKBase_Feature):
     if mtk.SheetMetal_Bead.CompareType(theFeature):
         aBead = mtk.SheetMetal_Bead.Cast(theFeature)
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("depth", aBead.Depth(), "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("depth", aBead.Depth(), "mm")
     elif mtk.SheetMetal_Cutout.CompareType(theFeature):
         aCutout = mtk.SheetMetal_Cutout.Cast(theFeature)
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("perimeter", aCutout.Perimeter(), "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("perimeter", aCutout.Perimeter(), "mm")
     elif mtk.SheetMetal_Louver.CompareType(theFeature):
-        pass #no parameters
+        aLouver = mtk.SheetMetal_Louver.Cast(theFeature)
+        feature_group.FeatureGroupManager.PrintFeatureParameter("depth",  aLouver.Depth(),  "mm")
     elif mtk.SheetMetal_Bridge.CompareType(theFeature):
         aBridge = mtk.SheetMetal_Bridge.Cast(theFeature)
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("length", aBridge.Length(), "mm")
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("depth",  aBridge.Depth(),  "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("length", aBridge.Length(), "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("depth",  aBridge.Depth(),  "mm")
     elif mtk.SheetMetal_Hole.CompareType(theFeature):
         aHole = mtk.SheetMetal_Hole.Cast(theFeature)
         anAxis = aHole.Axis().Axis()
-        aDirection = featuregroup.Direction(anAxis.X(), anAxis.Y(), anAxis.Z())
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("radius", aHole.Radius(), "mm")
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("axis",   aDirection,     "")
+        aDirection = feature_group.Direction(anAxis.X(), anAxis.Y(), anAxis.Z())
+        feature_group.FeatureGroupManager.PrintFeatureParameter("radius", aHole.Radius(), "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("depth",  aHole.Depth(),  "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("axis",   aDirection,     "")
     elif mtk.SheetMetal_Bend.CompareType(theFeature):
         aBend = mtk.SheetMetal_Bend.Cast(theFeature)
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("radius", aBend.Radius(),            "mm")
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("angle",  ToDegrees (aBend.Angle()), "deg")
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("length", aBend.Length(),            "mm")
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("width",  aBend.Width(),             "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("radius", aBend.Radius(),            "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("angle",  ToDegrees (aBend.Angle()), "deg")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("length", aBend.Length(),            "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("width",  aBend.Width(),             "mm")
     elif mtk.SheetMetal_Notch.CompareType(theFeature):
         aNotch = mtk.SheetMetal_Notch.Cast(theFeature)
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("length", aNotch.Length(), "mm")
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("width",  aNotch.Width(),  "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("length", aNotch.Length(), "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("width",  aNotch.Width(),  "mm")
         if mtk.SheetMetal_StraightNotch.CompareType(aNotch):
             aStraightNotch = mtk.SheetMetal_StraightNotch.Cast(aNotch)
-            featuregroup.FeatureGroupManager.PrintFeatureParameter ("corner fillet radius", aStraightNotch.CornerFilletRadius(), "mm")
+            feature_group.FeatureGroupManager.PrintFeatureParameter ("corner fillet radius", aStraightNotch.CornerFilletRadius(), "mm")
         elif mtk.SheetMetal_VNotch.CompareType(aNotch):
             aVNotch = mtk.SheetMetal_VNotch.Cast(aNotch)
-            featuregroup.FeatureGroupManager.PrintFeatureParameter ("angle", ToDegrees (aVNotch.Angle()), "deg")
+            feature_group.FeatureGroupManager.PrintFeatureParameter ("angle", ToDegrees (aVNotch.Angle()), "deg")
     elif mtk.SheetMetal_Tab.CompareType(theFeature):
         aTab = mtk.SheetMetal_Tab.Cast(theFeature)
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("length", aTab.Length(), "mm")
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("width",  aTab.Width(),  "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("length", aTab.Length(), "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("width",  aTab.Width(),  "mm")
 
 def PrintFeatures(theFeatureList: mtk.MTKBase_FeatureList):
-    aManager = featuregroup.FeatureGroupManager()
+    aManager = feature_group.FeatureGroupManager()
     GroupByParameters (theFeatureList, aManager)
     aManager.Print ("features", PrintFeatureParameters)
 
@@ -160,7 +162,7 @@ def CalculateInitialThicknessValue(theShape: cadex.ModelData_Shape):
     aThickness = aVolume / (aSurfaceArea / 2.0)
     return aThickness
 
-class PartProcessor(shapeprocessor.ShapeProcessor):
+class PartProcessor(shape_processor.ShapeProcessor):
     def __init__(self):
         super().__init__()
         self.myRecognizer = mtk.SheetMetal_FeatureRecognizer()

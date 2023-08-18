@@ -32,10 +32,10 @@
 
 import sys
 
-from pathlib import Path
 from os.path import abspath, dirname
+from pathlib import Path
 
-from sheet_metal_analyzer import main
+from feature_recognizer import main
 
 aSource = abspath(dirname(Path(__file__).resolve()) + "/../../models/Power_box_Chasis.STEP")
 

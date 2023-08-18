@@ -523,12 +523,16 @@ class MTKConverter_Report:
 
     @staticmethod
     def __SmallDistanceIssueName(theIssue: mtk.DFMSheetMetal_SmallDistanceBetweenFeaturesIssue):
-        if mtk.DFMSheetMetal_SmallDistanceBetweenHoleAndBendIssue.CompareType(theIssue):
+        if mtk.DFMSheetMetal_SmallDistanceBetweenBendAndLouverIssue.CompareType(theIssue):
+            return "Small Distance Between Bend And Louver Issue(s)"
+        elif mtk.DFMSheetMetal_SmallDistanceBetweenHoleAndBendIssue.CompareType(theIssue):
             return "Small Distance Between Hole And Bend Issue(s)"
         elif mtk.DFMSheetMetal_SmallDistanceBetweenHoleAndCutoutIssue.CompareType(theIssue):
             return "Small Distance Between Hole And Cutout Issue(s)"
         elif mtk.DFMSheetMetal_SmallDistanceBetweenHoleAndEdgeIssue.CompareType(theIssue):
             return "Small Distance Between Hole And Edge Issue(s)"
+        elif mtk.DFMSheetMetal_SmallDistanceBetweenHoleAndLouverIssue.CompareType(theIssue):
+            return "Small Distance Between Hole And Louver Issue(s)"
         elif mtk.DFMSheetMetal_SmallDistanceBetweenHoleAndNotchIssue.CompareType(theIssue):
             return "Small Distance Between Hole And Notch Issue(s)"
         elif mtk.DFMSheetMetal_SmallDistanceBetweenHolesIssue.CompareType(theIssue):
@@ -543,12 +547,16 @@ class MTKConverter_Report:
 
     @staticmethod
     def __SmallDistanceIssueColor(theIssue: mtk.DFMSheetMetal_SmallDistanceBetweenFeaturesIssue):
-        if mtk.DFMSheetMetal_SmallDistanceBetweenHoleAndBendIssue.CompareType(theIssue):
+        if mtk.DFMSheetMetal_SmallDistanceBetweenBendAndLouverIssue.CompareType(theIssue):
+            return "(195, 56, 19)"
+        elif mtk.DFMSheetMetal_SmallDistanceBetweenHoleAndBendIssue.CompareType(theIssue):
             return "(239, 136, 190)"
         elif mtk.DFMSheetMetal_SmallDistanceBetweenHoleAndCutoutIssue.CompareType(theIssue):
             return "(127, 130, 187)"
         elif mtk.DFMSheetMetal_SmallDistanceBetweenHoleAndEdgeIssue.CompareType(theIssue):
             return "(240, 135, 132)"
+        elif mtk.DFMSheetMetal_SmallDistanceBetweenHoleAndLouverIssue.CompareType(theIssue):
+            return "(15, 5, 129)"
         elif mtk.DFMSheetMetal_SmallDistanceBetweenHoleAndNotchIssue.CompareType(theIssue):
             return "(235, 51, 36)"
         elif mtk.DFMSheetMetal_SmallDistanceBetweenHolesIssue.CompareType(theIssue):
@@ -640,8 +648,9 @@ class MTKConverter_Report:
             aHole = mtk.SheetMetal_Hole.Cast(aFeature)
             anAxis = aHole.Axis().Axis()
             aDirection = Direction(anAxis.X(), anAxis.Y(), anAxis.Z())
-            aFeatureData = MTKConverter_Report.__WriteFeatureDataToString2(
+            aFeatureData = MTKConverter_Report.__WriteFeatureDataToString3(
                 "Radius", "mm", aHole.Radius(),
+                "Depth",  "mm", aHole.Depth(),
                 "Axis",    "",  aDirection,
                 theShapeIdVector)
             theManager.AddGroupData (MTKConverter_Report.__SheetMetalHoleName(aHole),
@@ -652,7 +661,10 @@ class MTKConverter_Report:
             aFeatureData = MTKConverter_Report.__WriteFeatureDataToString1("Perimeter", "mm", aCutout.Perimeter(), theShapeIdVector)
             theManager.AddGroupData ("Cutout(s)", "(88, 19, 94)", aFeatureData, theCount)
         elif mtk.SheetMetal_Louver.CompareType(aFeature):
-            aFeatureData = MTKConverter_Report.__WriteFeatureDataToString0(theShapeIdVector)
+            aLouver = mtk.SheetMetal_Louver.Cast(aFeature)
+            aFeatureData = MTKConverter_Report.__WriteFeatureDataToString1(
+                "Depth",  "mm", aLouver.Depth(),
+                theShapeIdVector)
             theManager.AddGroupData("Louver(s)", "(161, 251, 142)", aFeatureData, theCount)
         elif mtk.SheetMetal_Notch.CompareType(aFeature):
             aNotch = mtk.SheetMetal_Notch.Cast(aFeature)
@@ -708,6 +720,13 @@ class MTKConverter_Report:
                 "Actual Diameter", "mm", aNSDiameterHoleIssue.ActualDiameter(),
                 theShapeIdVector)
             theManager.AddGroupData("Non Standard Diameter Hole(s)", "(22, 65, 124)", aFeatureData, theCount)
+        elif mtk.DFMMachining_NonStandardDrillPointAngleBlindHoleIssue.CompareType(theIssue):
+            aNSDrillPointAngleBlindHoleIssue = mtk.DFMMachining_NonStandardDrillPointAngleBlindHoleIssue.Cast(theIssue)
+            aFeatureData = MTKConverter_Report.__WriteFeatureDataToString2(
+                "Nearest Standard Angle", "deg", aNSDrillPointAngleBlindHoleIssue.NearestStandardAngle() * 180 / math.pi,
+                "Actual Angle", "deg", aNSDrillPointAngleBlindHoleIssue.ActualAngle() * 180 / math.pi,
+                theShapeIdVector)
+            theManager.AddGroupData("Non Standard Drill Point Angle Blind Hole(s)", "(88, 13, 78)", aFeatureData, theCount)
         elif mtk.DFMMachining_PartialHoleIssue.CompareType(theIssue):
             aPartialHoleIssue = mtk.DFMMachining_PartialHoleIssue.Cast(theIssue)
             aFeatureData = MTKConverter_Report.__WriteFeatureDataToString2(
@@ -906,6 +925,13 @@ class MTKConverter_Report:
                 "Actual Depth",           "mm", aLDBIssue.ActualDepth(),
                 theShapeIdVector)
             theManager.AddGroupData("Large Depth Bead(s)", "(129, 127, 38)", aFeatureData, theCount)
+        elif mtk.DFMSheetMetal_SmallDepthLouverIssue.CompareType(theIssue):
+            aSDLIssue = mtk.DFMSheetMetal_SmallDepthLouverIssue.Cast(theIssue)
+            aFeatureData = MTKConverter_Report.__WriteFeatureDataToString2(
+                "Expected Minimum Depth", "mm", aSDLIssue.ExpectedMinDepth(),
+                "Actual Depth",           "mm", aSDLIssue.ActualDepth(),
+                theShapeIdVector)
+            theManager.AddGroupData("Small Depth Louver(s)", "(190, 127, 58)", aFeatureData, theCount)
         elif mtk.DFMSheetMetal_NonStandardSheetSizeIssue.CompareType(theIssue):
             aNSSSIssue = mtk.DFMSheetMetal_NonStandardSheetSizeIssue.Cast(theIssue)
             aNesrestStandardSize = aNSSSIssue.NearestStandardSheetSize()
@@ -1099,6 +1125,10 @@ class MTKConverter_Report:
                 aLDBIssue = mtk.DFMSheetMetal_LargeDepthBeadIssue.Cast(aFeature)
                 aShapeIdVector = MTKConverter_Report.__GetShapesId(aLDBIssue.Bead().Shape(), theBRep, cadex.ModelData_ST_Face)
                 theOrderedFeatureList.Append(aFeature, aShapeIdVector)
+            elif mtk.DFMSheetMetal_SmallDepthLouverIssue.CompareType(aFeature):
+                aSDLIssue = mtk.DFMSheetMetal_SmallDepthLouverIssue.Cast(aFeature)
+                aShapeIdVector = MTKConverter_Report.__GetShapesId(aSDLIssue.Louver().Shape(), theBRep, cadex.ModelData_ST_Face)
+                theOrderedFeatureList.Append(aFeature, aShapeIdVector)
             elif mtk.DFMSheetMetal_NonStandardSheetSizeIssue.CompareType(aFeature):
                 aShapeIdVector = []
                 theOrderedFeatureList.Append(aFeature, aShapeIdVector)
@@ -1122,6 +1152,12 @@ class MTKConverter_Report:
                 aSRBIssue = mtk.DFMSheetMetal_SmallRadiusBendIssue.Cast(aFeature)
                 aShapeIdVector = MTKConverter_Report.__GetShapesId(aSRBIssue.Bend().Shape(), theBRep, cadex.ModelData_ST_Face)
                 theOrderedFeatureList.Append(aFeature, aShapeIdVector)
+            elif mtk.DFMSheetMetal_SmallDistanceBetweenBendAndLouverIssue.CompareType(aFeature):
+                aSDIssue = mtk.DFMSheetMetal_SmallDistanceBetweenBendAndLouverIssue.Cast(aFeature)
+                aShapeIdVector = []
+                MTKConverter_Report.__AddShapesId(aSDIssue.Bend().Shape(), theBRep, cadex.ModelData_ST_Face, aShapeIdVector)
+                MTKConverter_Report.__AddShapesId(aSDIssue.Louver().Shape(), theBRep, cadex.ModelData_ST_Face, aShapeIdVector)
+                theOrderedFeatureList.Append(aFeature, aShapeIdVector)
             elif mtk.DFMSheetMetal_SmallDistanceBetweenHoleAndBendIssue.CompareType(aFeature):
                 aSDIssue = mtk.DFMSheetMetal_SmallDistanceBetweenHoleAndBendIssue.Cast(aFeature)
                 aShapeIdVector = []
@@ -1140,6 +1176,12 @@ class MTKConverter_Report:
                 MTKConverter_Report.__AddShapesId(aSDIssue.Hole().Shape(), theBRep, cadex.ModelData_ST_Edge, aShapeIdVector)
                 aShapeIdVector.append(theBRep.ShapeId(aSDIssue.Edge()))
                 theOrderedFeatureList.Append(aFeature, aShapeIdVector)
+            elif mtk.DFMSheetMetal_SmallDistanceBetweenHoleAndLouverIssue.CompareType(aFeature):
+                aSDIssue = mtk.DFMSheetMetal_SmallDistanceBetweenHoleAndNotchIssue.Cast(aFeature)
+                aShapeIdVector = []
+                MTKConverter_Report.__AddShapesId(aSDIssue.Hole().Shape(), theBRep, cadex.ModelData_ST_Edge, aShapeIdVector)
+                MTKConverter_Report.__AddShapesId(aSDIssue.Louver().Shape(), theBRep, cadex.ModelData_ST_Face, aShapeIdVector)
+                theOrderedFeatureList.Append(aFeature, aShapeIdVector)    
             elif mtk.DFMSheetMetal_SmallDistanceBetweenHoleAndNotchIssue.CompareType(aFeature):
                 aSDIssue = mtk.DFMSheetMetal_SmallDistanceBetweenHoleAndNotchIssue.Cast(aFeature)
                 aShapeIdVector = []
@@ -1205,6 +1247,7 @@ class MTKConverter_Report:
                       or mtk.DFMSheetMetal_IrregularSizeNotchIssue.CompareType(aFeature)
                       or mtk.DFMSheetMetal_IrregularSizeTabIssue.CompareType(aFeature)
                       or mtk.DFMSheetMetal_LargeDepthBeadIssue.CompareType(aFeature)
+                      or mtk.DFMSheetMetal_SmallDepthLouverIssue.CompareType(aFeature)
                       or mtk.DFMSheetMetal_NonStandardSheetSizeIssue.CompareType(aFeature)
                       or mtk.DFMSheetMetal_NonStandardSheetThicknessIssue.CompareType(aFeature)
                       or mtk.DFMSheetMetal_SmallDistanceBetweenFeaturesIssue.CompareType(aFeature)):

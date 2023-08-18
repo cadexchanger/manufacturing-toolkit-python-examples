@@ -41,8 +41,8 @@ sys.path.append(os.path.abspath(os.path.dirname(Path(__file__).resolve()) + "/..
 import cadex_license as license
 import mtk_license
 
-import shapeprocessor
-import featuregroup
+import shape_processor
+import feature_group
 
 def FaceTypeToString(theType):
     aFaceTypeMap = {
@@ -81,34 +81,34 @@ def HoleTypeToString(theType):
 def PrintFeatureParameters(theFeature: mtk.MTKBase_Feature):
     if mtk.Machining_TurningFace.CompareType(theFeature):
         aTurningFace = mtk.Machining_TurningFace.Cast(theFeature)
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("radius", aTurningFace.Radius(), "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("radius", aTurningFace.Radius(), "mm")
     elif mtk.Machining_Face.CompareType(theFeature):
         pass #no parameters
     elif mtk.Machining_Countersink.CompareType(theFeature):
         aCountersink = mtk.Machining_Countersink.Cast(theFeature)
         anAxis = aCountersink.Axis().Axis()
-        aDirection = featuregroup.Direction(anAxis.X(), anAxis.Y(), anAxis.Z())
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("radius", aCountersink.Radius(), "mm")
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("depth",  aCountersink.Depth(),  "mm")
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("axis",   aDirection,            "")
+        aDirection = feature_group.Direction(anAxis.X(), anAxis.Y(), anAxis.Z())
+        feature_group.FeatureGroupManager.PrintFeatureParameter("radius", aCountersink.Radius(), "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("depth",  aCountersink.Depth(),  "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("axis",   aDirection,            "")
     elif mtk.Machining_Hole.CompareType(theFeature):
         aHole = mtk.Machining_Hole.Cast(theFeature)
         anAxis = aHole.Axis().Axis()
-        aDirection = featuregroup.Direction(anAxis.X(), anAxis.Y(), anAxis.Z())
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("radius", aHole.Radius(), "mm")
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("depth",  aHole.Depth(),  "mm")
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("axis",   aDirection,     "")
+        aDirection = feature_group.Direction(anAxis.X(), anAxis.Y(), anAxis.Z())
+        feature_group.FeatureGroupManager.PrintFeatureParameter("radius", aHole.Radius(), "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("depth",  aHole.Depth(),  "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("axis",   aDirection,     "")
     elif mtk.Machining_Pocket.CompareType(theFeature):
         aPocket = mtk.Machining_Pocket.Cast(theFeature)
         anAxis = aPocket.Axis().Direction()
-        aDirection = featuregroup.Direction(anAxis.X(), anAxis.Y(), anAxis.Z())
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("length", aPocket.Length(), "mm")
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("width",  aPocket.Width(),  "mm")
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("depth",  aPocket.Depth(),  "mm")
-        featuregroup.FeatureGroupManager.PrintFeatureParameter("axis",   aDirection,       "")
+        aDirection = feature_group.Direction(anAxis.X(), anAxis.Y(), anAxis.Z())
+        feature_group.FeatureGroupManager.PrintFeatureParameter("length", aPocket.Length(), "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("width",  aPocket.Width(),  "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("depth",  aPocket.Depth(),  "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("axis",   aDirection,       "")
 
 def PrintFeatures(theFeatureList: mtk.MTKBase_FeatureList):
-    aManager = featuregroup.FeatureGroupManager()
+    aManager = feature_group.FeatureGroupManager()
 
     #group by parameters to provide more compact information about features
     for aFeature in theFeatureList:
@@ -128,7 +128,7 @@ def PrintFeatures(theFeatureList: mtk.MTKBase_FeatureList):
 
     aManager.Print ("features", PrintFeatureParameters)
 
-class PartProcessor(shapeprocessor.SolidProcessor):
+class PartProcessor(shape_processor.SolidProcessor):
     def __init__(self, theOperation): # Not imported swig: mtk.Machining_OperationType?
         super().__init__()
         self.myOperation = theOperation
