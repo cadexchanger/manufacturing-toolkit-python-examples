@@ -47,7 +47,13 @@ import shape_processor
 def SmallDistanceIssueName(theIssue: mtk.DFMSheetMetal_SmallDistanceBetweenFeaturesIssue):
     if mtk.DFMSheetMetal_SmallDistanceBetweenBendAndLouverIssue.CompareType(theIssue):
         return "Small Distance Between Bend And Louver Issue(s)"
-    if mtk.DFMSheetMetal_SmallDistanceBetweenHoleAndBendIssue.CompareType(theIssue):
+    elif mtk.DFMSheetMetal_SmallDistanceBetweenExtrudedHoleAndBendIssue.CompareType(theIssue):
+        return "Small Distance Between Extruded Hole And Bend Issue(s)"
+    elif mtk.DFMSheetMetal_SmallDistanceBetweenExtrudedHoleAndEdgeIssue.CompareType(theIssue):
+        return "Small Distance Between Extruded Hole And Edge Issue(s)"
+    elif mtk.DFMSheetMetal_SmallDistanceBetweenExtrudedHolesIssue.CompareType(theIssue):
+        return "Small Distance Between Extruded Holes Issue(s)"
+    elif mtk.DFMSheetMetal_SmallDistanceBetweenHoleAndBendIssue.CompareType(theIssue):
         return "Small Distance Between Hole And Bend Issue(s)"
     elif mtk.DFMSheetMetal_SmallDistanceBetweenHoleAndCutoutIssue.CompareType(theIssue):
         return "Small Distance Between Hole And Cutout Issue(s)"
@@ -88,6 +94,15 @@ def PrintFeatureParameters(theIssue: mtk.MTKBase_Feature):
         aICFRNIssue = mtk.DFMSheetMetal_IrregularCornerFilletRadiusNotchIssue.Cast(theIssue)
         feature_group.FeatureGroupManager.PrintFeatureParameter("expected corner fillet radius", aICFRNIssue.ExpectedCornerFilletRadius(), "mm")
         feature_group.FeatureGroupManager.PrintFeatureParameter("actual corner fillet radius",   aICFRNIssue.ActualCornerFilletRadius(),   "mm")
+    elif mtk.DFMSheetMetal_IrregularDepthExtrudedHoleIssue.CompareType(theIssue):
+        aIDEHIssue = mtk.DFMSheetMetal_IrregularDepthExtrudedHoleIssue.Cast(theIssue)
+        feature_group.FeatureGroupManager.PrintFeatureParameter("expected min extruded height", aIDEHIssue.ExpectedMinExtrudedHeight(), "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("expected max extruded height", aIDEHIssue.ExpectedMaxExtrudedHeight(), "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("actual extruded height",       aIDEHIssue.ActualExtrudedHeight(),      "mm")
+    elif mtk.DFMSheetMetal_IrregularRadiusOpenHemBendIssue.CompareType(theIssue):
+        aIROHBIssue = mtk.DFMSheetMetal_IrregularRadiusOpenHemBendIssue.Cast(theIssue)
+        feature_group.FeatureGroupManager.PrintFeatureParameter("expected radius", aIROHBIssue.ExpectedRadius(), "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("actual radius",   aIROHBIssue.ActualRadius(),   "mm")
     elif mtk.DFMSheetMetal_IrregularSizeBendReliefIssue.CompareType(theIssue):
         aISBRIssue = mtk.DFMSheetMetal_IrregularSizeBendReliefIssue.Cast(theIssue)
         anExpectedRelief = aISBRIssue.ExpectedMinBendRelief()
@@ -133,6 +148,10 @@ def PrintFeatureParameters(theIssue: mtk.MTKBase_Feature):
         aSLFIssue = mtk.DFMSheetMetal_SmallLengthFlangeIssue.Cast(theIssue)
         feature_group.FeatureGroupManager.PrintFeatureParameter("expected min length", aSLFIssue.ExpectedMinLength(), "mm")
         feature_group.FeatureGroupManager.PrintFeatureParameter("actual length",       aSLFIssue.ActualLength(),      "mm")
+    elif mtk.DFMSheetMetal_SmallLengthHemBendFlangeIssue.CompareType(theIssue):
+        aSLHBFIssue = mtk.DFMSheetMetal_SmallLengthHemBendFlangeIssue.Cast(theIssue)
+        feature_group.FeatureGroupManager.PrintFeatureParameter("expected min length", aSLHBFIssue.ExpectedMinLength(), "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("actual length",       aSLHBFIssue.ActualLength(),      "mm")
     elif mtk.DFMSheetMetal_IrregularSizeNotchIssue.CompareType(theIssue):
         aISNIssue = mtk.DFMSheetMetal_IrregularSizeNotchIssue.Cast(theIssue)
         feature_group.FeatureGroupManager.PrintFeatureParameter(
@@ -185,6 +204,10 @@ def PrintIssues(theIssueList: mtk.MTKBase_FeatureList):
             aManager.AddFeature("Flat Pattern Interference Issue(s)", "", False, anIssue)
         elif mtk.DFMSheetMetal_IrregularCornerFilletRadiusNotchIssue.CompareType(anIssue):
             aManager.AddFeature("Irregular Corner Fillet Radius Notch Issue(s)", "Notch(es)", True, anIssue)
+        elif mtk.DFMSheetMetal_IrregularDepthExtrudedHoleIssue.CompareType(anIssue):
+            aManager.AddFeature("Irregular Depth Extruded Hole Issue(s)", "Hole(s)", True, anIssue)
+        elif mtk.DFMSheetMetal_IrregularRadiusOpenHemBendIssue.CompareType(anIssue):
+            aManager.AddFeature("Irregular Radius Open Hem Bend Issue(s)", "Bend(s)", True, anIssue)
         elif mtk.DFMSheetMetal_IrregularSizeBendReliefIssue.CompareType(anIssue):
             aManager.AddFeature("Irregular Size Bend Relief Issue(s)", "Bend(s)", True, anIssue)
         elif mtk.DFMSheetMetal_LargeDepthBeadIssue.CompareType(anIssue):
@@ -195,6 +218,8 @@ def PrintIssues(theIssueList: mtk.MTKBase_FeatureList):
             aManager.AddFeature("Inconsistent Radius Bend Issue(s)", "Bend(s)", True, anIssue)
         elif mtk.DFMSheetMetal_SmallLengthFlangeIssue.CompareType(anIssue):
             aManager.AddFeature("Small Length Flange Issue(s)", "Flange(s)", True, anIssue)
+        elif mtk.DFMSheetMetal_SmallLengthHemBendFlangeIssue.CompareType(anIssue):
+            aManager.AddFeature("Small Length Hem Bend Flange Issue(s)", "Flange(s)", True, anIssue)
         elif mtk.DFMSheetMetal_IrregularSizeNotchIssue.CompareType(anIssue):
             aManager.AddFeature("Irregular Size Notch Issue(s)", "Notch(s)", True, anIssue)
         elif mtk.DFMSheetMetal_IrregularSizeTabIssue.CompareType(anIssue):

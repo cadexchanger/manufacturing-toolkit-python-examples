@@ -87,6 +87,10 @@ def PrintFeatureParameters(theIssue: mtk.MTKBase_Feature):
         aDPIssue = mtk.DFMMachining_DeepPocketIssue.Cast(theIssue)
         feature_group.FeatureGroupManager.PrintFeatureParameter("expected max depth", aDPIssue.ExpectedMaxDepth(), "mm")
         feature_group.FeatureGroupManager.PrintFeatureParameter("actual depth",       aDPIssue.ActualDepth(),      "mm")
+    elif mtk.DFMMachining_HighBossIssue.CompareType(theIssue):
+        aHBIssue = mtk.DFMMachining_HighBossIssue.Cast(theIssue)
+        feature_group.FeatureGroupManager.PrintFeatureParameter("expected max height", aHBIssue.ExpectedMaxHeight(), "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("actual height",       aHBIssue.ActualHeight(),      "mm")
     elif mtk.DFMMachining_LargeMilledPartIssue.CompareType(theIssue):
         aLMPIssue = mtk.DFMMachining_LargeMilledPartIssue.Cast(theIssue)
         anExpectedSize = aLMPIssue.ExpectedMaxMilledPartSize()
@@ -163,6 +167,8 @@ def PrintFeatureParameters(theIssue: mtk.MTKBase_Feature):
         feature_group.FeatureGroupManager.PrintFeatureParameter("actual diameter",    aDBHIssue.ActualDiameter(),   "mm")
     elif mtk.DFMMachining_SquareEndKeywayIssue.CompareType(theIssue):
         pass #no parameters
+    elif mtk.DFMMachining_NonSymmetricalAxialSlotIssue.CompareType(theIssue):
+        pass #no parameters
 
 def PrintIssues(theIssueList: mtk.MTKBase_FeatureList):
     aManager = feature_group.FeatureGroupManager()
@@ -191,6 +197,8 @@ def PrintIssues(theIssueList: mtk.MTKBase_FeatureList):
             aManager.AddFeature("Non Standard Radius Milled Part Floor Fillet Issue(s)", "Floor Fillet(s)", True, anIssue)
         elif mtk.DFMMachining_DeepPocketIssue.CompareType(anIssue):
             aManager.AddFeature("Deep Pocket Issue(s)", "Pocket(s)", True, anIssue)
+        elif mtk.DFMMachining_DeepPocketIssue.CompareType(anIssue):
+            aManager.AddFeature("High Boss Issue(s)", "Boss(es)", True, anIssue)
         elif mtk.DFMMachining_LargeMilledPartIssue.CompareType(anIssue):
             aManager.AddFeature("Large Milled Part Issue(s)", "Part(s)", True, anIssue)
         elif mtk.DFMMachining_SmallRadiusMilledPartInternalCornerIssue.CompareType(anIssue):
@@ -220,6 +228,8 @@ def PrintIssues(theIssueList: mtk.MTKBase_FeatureList):
             aManager.AddFeature("Deep Bored Hole Issue(s)", "Bored Hole(s)", True, anIssue)
         elif mtk.DFMMachining_SquareEndKeywayIssue.CompareType(anIssue):
             aManager.AddFeature("Square End Keyway Issue(s)", "", False, anIssue)
+        elif mtk.DFMMachining_NonSymmetricalAxialSlotIssue.CompareType(anIssue):
+            aManager.AddFeature("Non Symmetrical Axial Slot Issue(s)", "", False, anIssue)
 
     aManager.Print ("issues", PrintFeatureParameters)
 

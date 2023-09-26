@@ -106,6 +106,11 @@ def PrintFeatureParameters(theFeature: mtk.MTKBase_Feature):
         feature_group.FeatureGroupManager.PrintFeatureParameter("width",  aPocket.Width(),  "mm")
         feature_group.FeatureGroupManager.PrintFeatureParameter("depth",  aPocket.Depth(),  "mm")
         feature_group.FeatureGroupManager.PrintFeatureParameter("axis",   aDirection,       "")
+    elif mtk.MTKBase_Boss.CompareType(theFeature):
+        aBoss = mtk.MTKBase_Boss.Cast(theFeature)
+        feature_group.FeatureGroupManager.PrintFeatureParameter("length", aBoss.Length(), "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("width",  aBoss.Width(),  "mm")
+        feature_group.FeatureGroupManager.PrintFeatureParameter("height", aBoss.Height(), "mm")
 
 def PrintFeatures(theFeatureList: mtk.MTKBase_FeatureList):
     aManager = feature_group.FeatureGroupManager()
@@ -125,6 +130,8 @@ def PrintFeatures(theFeatureList: mtk.MTKBase_FeatureList):
             aManager.AddFeature(HoleTypeToString (aHole.Type()), "Hole(s)", True, aFeature)
         elif mtk.Machining_Pocket.CompareType(aFeature):
             aManager.AddFeature("Pocket(s)", "Pocket(s)", True, aFeature)
+        elif mtk.MTKBase_Boss.CompareType(aFeature):
+            aManager.AddFeature("Boss(es)", "Boss(es)", True, aFeature)
 
     aManager.Print ("features", PrintFeatureParameters)
 
