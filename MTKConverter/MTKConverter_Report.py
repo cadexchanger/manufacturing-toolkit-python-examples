@@ -635,7 +635,7 @@ class MTKConverter_Report:
             theManager.AddGroupData ("Pocket(s)", "(23, 63, 63)", aFeatureData, theCount)
         elif mtk.MTKBase_Boss.CompareType(aFeature):
             aBoss = mtk.MTKBase_Boss.Cast(aFeature)
-            aFeatureData = MTKConverter_Report.__WriteFeatureDataToString4(
+            aFeatureData = MTKConverter_Report.__WriteFeatureDataToString3(
                 "Length", "mm", aBoss.Length(),
                 "Width",  "mm", aBoss.Width(),
                 "Height", "mm", aBoss.Height(),
