@@ -6,6 +6,10 @@ More information about MTK can be found [here](https://cadexchanger.com/products
 
 The examples are provided under a permissive Modified BSD License. You may insert their source code into your application and modify as needed.
 
+> **⚠ IMPORTANT**
+> <br>Since version 3.23.0 Manufacturing Toolkit distributed as part of CAD Exchanger SDK package. Latest MTK examples can be found in repository with all SDK python examples, under `mtk` folder - [here](https://github.com/cadexchanger/cadexchanger-sdk-python-examples/tree/main/mtk).
+> <br>Current repository contains examples working with 3.22.0 version of MTK and no more be updated.
+
 ## Requirements
 
 * Latest version of CAD Exchanger SDK
